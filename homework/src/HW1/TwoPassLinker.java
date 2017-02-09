@@ -1,18 +1,11 @@
 package HW1;
 
 
-//import com.sun.tools.javac.util.Pair;
-
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-
 import java.nio.file.Files;
 import java.nio.file.Paths;
-
-/*
-1 xy 2 2 z xy 5 R 1004 I 5678 E 2000 R 8002 E 7001 0 1 z 6 R 8001 E 1000 E 1000 E 3000 R 1002 A 1010 0 1 z 2 R 5001 E 4000 1 z 2 2 xy z 3 A 8000 E 1001 E 2000
- */
 
 /**
  * @Title: Lab 1
@@ -20,6 +13,7 @@ import java.nio.file.Paths;
  * @Date : Feb 9, 2017
  * @Author : Lizi Chen
  * @Email: lc3397@nyu.edu
+ * @Github: https://github.com/lizichen/OS_Spring2017
  */
 public class TwoPassLinker {
     private static final String DUPLICATION_ERROR = " Error: This variable is multiply defined; first value used.";
@@ -116,6 +110,7 @@ public class TwoPassLinker {
                             this.definitionList.add(new DefinitionUnit(sym, loc));
                         }
                     }
+                    //TODO: Remove the above after refactoring the Module class.
 
                     currentUseList = new ArrayList<>();
                     baseAdd += numberOfProgramTextUnits;
@@ -179,7 +174,6 @@ public class TwoPassLinker {
     }
 
     private void printMemoryMap(){
-        //ArrayList<Pair<Integer, Integer>> memoryMap = new ArrayList<>();
         HashMap memoryresultMap = new HashMap();
         int line = 0;
         int moduleOrder = 0;
@@ -217,23 +211,17 @@ public class TwoPassLinker {
                     System.out.println("ERROR! Type is not defined!");
                 }
                 memoryresultMap.put(line, address);
-                //memoryMap.add(new Pair(line, address));
-
                 line++;
             }
             moduleOrder++;
         }
         System.out.println("\nMemory Map");
-//        for(Pair p : memoryMap){
-//            System.out.println(p.fst +":\t" + p.snd);
-//        }
         Iterator it = memoryresultMap.entrySet().iterator();
         while(it.hasNext()){
             Map.Entry pair = (Map.Entry)it.next();
             System.out.println(pair.getKey() + ":\t" + pair.getValue());
             it.remove();
         }
-
     }
 
     //TODO: very bad design, should change the Module to have a hashtable first.
@@ -288,7 +276,6 @@ public class TwoPassLinker {
      */
     private boolean hasNoRedundantDefine(){
         boolean hasNoRedundancy = true;
-
         Hashtable cloneDefTable = (Hashtable) this.definitionTable.clone();
 
         for(Module m : this.moduleList){
@@ -397,12 +384,13 @@ public class TwoPassLinker {
                 newLinker = new TwoPassLinker(FILE_DIR+filePath);
             }
         }else{
-            filePath="input-5.txt";
-            newLinker = new TwoPassLinker(FILE_DIR+filePath);
-            //throw new IllegalArgumentException("\nERROR! Wrong Input File Path!\nTry input format as:\njava TwoPassLinker input-5.txt");
+            //filePath="input-5.txt";
+            //newLinker = new TwoPassLinker(FILE_DIR+filePath);
+            throw new IllegalArgumentException("\nERROR! Wrong Input File Path!\nTry input format as:\njava TwoPassLinker input-5.txt");
         }
 
         newLinker.firstPass();
+        //For testing only:
         //newLinker.printModules();
 
         boolean verify_1 = newLinker.isValidDefinitionList();
@@ -419,4 +407,4 @@ public class TwoPassLinker {
     }
 }
 
-//TODO: 1) Cmd prompt 2) Detailed Error Msg
+//TODO: 2) Detailed Error Msg ? 3) Minor Refactor!
