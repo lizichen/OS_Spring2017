@@ -7,6 +7,7 @@ import java.util.ArrayList;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.Set;
 
@@ -24,6 +25,7 @@ import java.util.Set;
 public class TwoPassLinker {
     private static final String DUPLICATION_ERROR = " Error: This variable is multiply defined; first value used.";
     private static final String MISS_DEFINE_ERROR = " Error: This variable is NOT defined; zero used.";
+    private static final String EMPTY_STRING = "";
 
     private static final String FILE_DIR = "/Users/lizichen1/Google_Drive/OS_Sp17/homework/src/Two-Pass-Linker-master/inputs/";
     private String inputString;
@@ -37,7 +39,14 @@ public class TwoPassLinker {
 
     public TwoPassLinker(String filename) throws IOException {
         this.inputString = new String(Files.readAllBytes(Paths.get(FILE_DIR + filename)), StandardCharsets.UTF_8);
-        this.tokens = this.inputString.split("\\s+");
+        String[] fulllist = this.inputString.split("\\s+");
+        if(fulllist[0].equals(EMPTY_STRING)){
+            //when the first token is an empty space
+            this.tokens = Arrays.copyOfRange(fulllist, 2, fulllist.length);
+        }else{
+            this.tokens = Arrays.copyOfRange(fulllist, 1, fulllist.length);
+        }
+        System.out.print(this.tokens.length);
     }
 
     private void firstPass(){
@@ -291,7 +300,7 @@ public class TwoPassLinker {
     }
 
     public static void main(String[] args) throws IOException {
-        TwoPassLinker newLinker = new TwoPassLinker("input-9.txt");
+        TwoPassLinker newLinker = new TwoPassLinker("input-10.txt");
         newLinker.firstPass();
         newLinker.printDefinitionList();
         newLinker.printModules();
