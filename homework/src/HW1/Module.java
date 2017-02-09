@@ -14,10 +14,6 @@ public class Module {
     // Base Address - starts from 0
     int baseAddr;
 
-    // Definition List
-    int numberOfDefinition;
-    ArrayList<DefinitionUnit> definitionList;
-
     // Use List
     int numberOfUsage;
     ArrayList<UseUnit> useList;
@@ -28,10 +24,8 @@ public class Module {
 
     public Module(int newBaseAddr){
         this.baseAddr = newBaseAddr;
-        this.numberOfDefinition = 0;
         this.numberOfUsage = 0;
         this.numberOfProgramText = 0;
-        this.definitionList = new ArrayList<>();
         this.useList = new ArrayList<>();
         this.programTextList = new ArrayList<>();
     }
