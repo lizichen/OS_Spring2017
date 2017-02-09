@@ -21,10 +21,12 @@
     ```bash
     javac -sourcepath HW1/ HW1/*.java
     ```
+    
 - Run the program with specific input.txt file:
     ```bash
     java HW1/TwoPassLinker SampleData/inputs/input-1.txt
     ```
+    
     or any directory that has the input .txt file:
     ```bash
     java HW1/TwoPassLinker yourDir/input-1.txt
