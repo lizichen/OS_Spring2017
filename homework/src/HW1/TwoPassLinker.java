@@ -388,7 +388,7 @@ public class TwoPassLinker {
 
     public static void main(String[] args) throws IOException {
 
-        String FILE_DIR = "/Users/lizichen1/Google_Drive/OS_Sp17/homework/src/Two-Pass-Linker-master/inputs/";
+        String FILE_DIR = "/Users/lizichen1/Google_Drive/OS_Sp17/homework/src/SampleData/inputs/";
 
         String filePath;
         TwoPassLinker newLinker = null;
