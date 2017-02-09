@@ -1,6 +1,8 @@
 package HW1;
 
 
+import com.sun.tools.javac.util.Pair;
+
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -9,7 +11,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Hashtable;
-import java.util.Set;
 
 /*
 1 xy 2 2 z xy 5 R 1004 I 5678 E 2000 R 8002 E 7001 0 1 z 6 R 8001 E 1000 E 1000 E 3000 R 1002 A 1010 0 1 z 2 R 5001 E 4000 1 z 2 2 xy z 3 A 8000 E 1001 E 2000
@@ -26,6 +27,10 @@ public class TwoPassLinker {
     private static final String DUPLICATION_ERROR = " Error: This variable is multiply defined; first value used.";
     private static final String MISS_DEFINE_ERROR = " Error: This variable is NOT defined; zero used.";
     private static final String EMPTY_STRING = "";
+    private static final String IMMEDIATE = "I";
+    private static final String ABSOLUTE  = "A";
+    private static final String RELATIVE  = "R";
+    private static final String EXTERNAL  = "E";
 
     private static final String FILE_DIR = "/Users/lizichen1/Google_Drive/OS_Sp17/homework/src/Two-Pass-Linker-master/inputs/";
     private String inputString;
@@ -46,7 +51,6 @@ public class TwoPassLinker {
         }else{
             this.tokens = Arrays.copyOfRange(fulllist, 1, fulllist.length);
         }
-        System.out.print(this.tokens.length);
     }
 
     private void firstPass(){
@@ -57,8 +61,8 @@ public class TwoPassLinker {
         ArrayList<UseUnit> currentUseList = new ArrayList<>();
         int currentNumberOfUsages = 0;
 
+        DefinitionUnit newDef = null; //TODO: this is a make-up approach, should include definition inside a module! Refactor later!
         while(i<this.tokens.length) {
-
             if(passingMode == 1){
                 if(isDigit(tokens[i])){
                     int numberOfDef = Integer.valueOf(tokens[i]);
@@ -72,7 +76,7 @@ public class TwoPassLinker {
                             String sym = tokens[i];
                             i++;
                             String loc = tokens[i];
-                            DefinitionUnit newDef = new DefinitionUnit(sym, Integer.valueOf(loc)+baseAdd);
+                            newDef = new DefinitionUnit(sym, Integer.valueOf(loc)+baseAdd);
                             this.definitionList.add(newDef);
                         }
                         passingMode = 2;
@@ -104,10 +108,23 @@ public class TwoPassLinker {
                     newModule.programTextList = parseProgramText(i+1, numberOfProgramTextUnits);
                     this.moduleList.add(newModule);
 
+                    //TODO: after refactor the definition unit inside the Modele, we should eliminate this:
+                    if(newDef!=null){
+                        //System.out.println("evaluate if definition exceeds module size!");
+                        if(newDef.loc - baseAdd >= newModule.numberOfProgramText){ //newDef.loc!
+                            String sym = newDef.sym;
+                            int loc = newModule.baseAddr;
+
+                            this.definitionList.remove(this.definitionList.size()-1);
+                            this.definitionList.add(new DefinitionUnit(sym, loc));
+                        }
+                    }
+
                     currentUseList = new ArrayList<>();
                     baseAdd += numberOfProgramTextUnits;
                     i = i + (numberOfProgramTextUnits*2) + 1;
                     passingMode = 1;
+                    newDef = null;
                 }else{
                     System.out.println("Something is wrong! The first item in each list MUST be a digit!");
                     System.exit(-1);
@@ -135,8 +152,9 @@ public class TwoPassLinker {
     }
 
     private void printDefinitionList(){
+        System.out.println("Symbol Table");
         for (DefinitionUnit i:this.definitionList) {
-            System.out.println(i.sym+" "+i.loc);
+            System.out.println(i.sym+" = "+i.loc);
         }
     }
 
@@ -157,9 +175,70 @@ public class TwoPassLinker {
     }
 
     private void printErrorAndWarnings(){
+        System.out.println();
         for(String e:this.errors){
             System.out.println(e);
         }
+    }
+
+    private void printMemoryMap(){
+        ArrayList<Pair<Integer, Integer>> memoryMap = new ArrayList<>();
+        int line = 0;
+        int moduleOrder = 0;
+        for(Module m : this.moduleList){
+            int baseAddr = m.baseAddr;
+
+            String[] useArr = convertListToArray(m.useList, m.numberOfProgramText);
+
+            for(int i=0; i<m.numberOfProgramText; i++){
+                ProgramTextUnit currentP = m.programTextList.get(i);
+                String type = currentP.type;
+                int address = 0;
+
+                if(type.equals(RELATIVE)){
+                    if(currentP.word % 1000 >= m.numberOfProgramText){
+                        this.errors.add("Error: Module "+moduleOrder+" has instruction: [R "+currentP.word+"] that exceeds the module size "+m.numberOfProgramText+"; zero used.");
+                        address = currentP.word / 1000 * 1000;
+                    }else{
+                        address = baseAddr + currentP.word;
+                    }
+                }else if(type.equals(IMMEDIATE)){
+                    address = currentP.word;
+                }else if(type.equals(EXTERNAL)){
+                    String defSym = useArr[i];
+                    int extraValue = (int)this.definitionTable.get(defSym);
+                    address = currentP.word / 1000 * 1000 + extraValue;
+                }else if(type.equals(ABSOLUTE)){
+                    address = currentP.word;
+                    int errorAdd = address;
+                    if(address%1000 >= 200){
+                        address = address / 1000 * 1000 ;
+                        this.errors.add("Error: Module "+moduleOrder+" has instruction: [A "+errorAdd+"] that has absolute address exceeds machine size; zero used.");
+                    }
+                }else{
+                    System.out.println("ERROR! Type is not defined!");
+                }
+                memoryMap.add(new Pair(line, address));
+                line++;
+            }
+            moduleOrder++;
+        }
+        System.out.println("\nMemory Map");
+        for(Pair p : memoryMap){
+            System.out.println(p.fst +":\t" + p.snd);
+        }
+
+    }
+
+    //TODO: very bad design, should change the Module to have a hashtable first.
+    public static String[] convertListToArray(ArrayList<UseUnit> useUnitList, int numberOfProgramTextUnit){
+        String[] newArr = new String[numberOfProgramTextUnit];
+        for(UseUnit u : useUnitList){
+            for(Object i :  u.positions){
+                 newArr[(int)i] = u.symbol;
+            }
+        }
+        return newArr;
     }
 
     /**
@@ -193,6 +272,7 @@ public class TwoPassLinker {
                 if(!this.definitionTable.containsKey(unit.symbol)){
                     this.definitionList.add(new DefinitionUnit(unit.symbol, 0));
                     this.errors.add(unit.symbol+MISS_DEFINE_ERROR);
+                    this.definitionTable.put(unit.symbol, 0);
                     hasAll = false;
                 }
             }
@@ -206,15 +286,17 @@ public class TwoPassLinker {
     private boolean hasNoRedundantDefine(){
         boolean hasNoRedundancy = true;
 
+        Hashtable cloneDefTable = (Hashtable) this.definitionTable.clone();
+
         for(Module m : this.moduleList){
             for(UseUnit u : m.useList){
-                if(this.definitionTable.containsKey(u.symbol)){
-                    this.definitionTable.put(u.symbol, -1);
+                if(cloneDefTable.containsKey(u.symbol)){
+                    cloneDefTable.put(u.symbol, -1);
                 }
             }
         }
-        for(Object key : this.definitionTable.keySet()){
-            if((int)this.definitionTable.get(key) != -1){
+        for(Object key : cloneDefTable.keySet()){
+            if((int)cloneDefTable.get(key) != -1){
                 this.errors.add("Warning: "+key.toString()+" was defined but never used."); //TODO: do we need to specify which module?
                 hasNoRedundancy = false;
             }
@@ -281,7 +363,6 @@ public class TwoPassLinker {
         return i;
     }
 
-
     private ArrayList<ProgramTextUnit> parseProgramText(int i, int numberOfPairs){
         ArrayList<ProgramTextUnit> currentProgramList = new ArrayList<>();
         for(int t = 0; t < numberOfPairs; t++){
@@ -300,19 +381,23 @@ public class TwoPassLinker {
     }
 
     public static void main(String[] args) throws IOException {
-        TwoPassLinker newLinker = new TwoPassLinker("input-10.txt");
+        TwoPassLinker newLinker = new TwoPassLinker("input-4.txt");
         newLinker.firstPass();
-        newLinker.printDefinitionList();
-        newLinker.printModules();
+
+        //newLinker.printModules();
 
         boolean verify_1 = newLinker.isValidDefinitionList();
         boolean verify_2 = newLinker.hasAllNeededSymbol();
         boolean verify_3 = newLinker.hasNoContradictedUsePosition();
         boolean verify_4 = newLinker.hasNoRedundantDefine();
 
+        newLinker.printDefinitionList();
+        newLinker.printMemoryMap();
+
         if(!(verify_1 && verify_2 && verify_3 && verify_4)){
             newLinker.printErrorAndWarnings();
         }
     }
-
 }
+
+//TODO: 1) Cmd prompt 2) Detailed Error Msg 3) Minor Refactor

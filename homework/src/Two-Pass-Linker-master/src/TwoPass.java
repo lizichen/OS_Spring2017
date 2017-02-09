@@ -687,7 +687,7 @@ public class TwoPass {
 //			throw new IllegalArgumentException(
 //					"\nExpected path to input series of object modules.\nFor example, \n\njava TwoPass input-5.txt\n");
 
-		int inputFile = 2;
+		int inputFile = 3;
 		filePath = "/Users/lizichen1/Google_Drive/OS_Sp17/homework/src/Two-Pass-Linker-master/inputs/input-" + inputFile + ".txt";
 
 		new TwoPass(filePath);
