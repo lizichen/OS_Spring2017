@@ -108,6 +108,7 @@ public class TwoPassLinker {
 
                             this.definitionList.remove(this.definitionList.size()-1);
                             this.definitionList.add(new DefinitionUnit(sym, loc));
+                            this.errors.add("ERROR! Definition of [" + sym + "] exceeds module size; first word in module used: ["+sym+"="+loc+"]");
                         }
                     }
                     //TODO: Remove the above after refactoring the Module class.
