@@ -1,16 +1,14 @@
 package HW1;
 
 
-import com.sun.tools.javac.util.Pair;
+//import com.sun.tools.javac.util.Pair;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
+import java.util.*;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.Hashtable;
 
 /*
 1 xy 2 2 z xy 5 R 1004 I 5678 E 2000 R 8002 E 7001 0 1 z 6 R 8001 E 1000 E 1000 E 3000 R 1002 A 1010 0 1 z 2 R 5001 E 4000 1 z 2 2 xy z 3 A 8000 E 1001 E 2000
@@ -32,7 +30,6 @@ public class TwoPassLinker {
     private static final String RELATIVE  = "R";
     private static final String EXTERNAL  = "E";
 
-    private static final String FILE_DIR = "/Users/lizichen1/Google_Drive/OS_Sp17/homework/src/Two-Pass-Linker-master/inputs/";
     private String inputString;
     private String[] tokens;
 
@@ -43,7 +40,7 @@ public class TwoPassLinker {
     private ArrayList<String> errors = new ArrayList<>();
 
     public TwoPassLinker(String filename) throws IOException {
-        this.inputString = new String(Files.readAllBytes(Paths.get(FILE_DIR + filename)), StandardCharsets.UTF_8);
+        this.inputString = new String(Files.readAllBytes(Paths.get(filename)), StandardCharsets.UTF_8);
         String[] fulllist = this.inputString.split("\\s+");
         if(fulllist[0].equals(EMPTY_STRING)){
             //when the first token is an empty space
@@ -182,7 +179,8 @@ public class TwoPassLinker {
     }
 
     private void printMemoryMap(){
-        ArrayList<Pair<Integer, Integer>> memoryMap = new ArrayList<>();
+        //ArrayList<Pair<Integer, Integer>> memoryMap = new ArrayList<>();
+        HashMap memoryresultMap = new HashMap();
         int line = 0;
         int moduleOrder = 0;
         for(Module m : this.moduleList){
@@ -218,14 +216,22 @@ public class TwoPassLinker {
                 }else{
                     System.out.println("ERROR! Type is not defined!");
                 }
-                memoryMap.add(new Pair(line, address));
+                memoryresultMap.put(line, address);
+                //memoryMap.add(new Pair(line, address));
+
                 line++;
             }
             moduleOrder++;
         }
         System.out.println("\nMemory Map");
-        for(Pair p : memoryMap){
-            System.out.println(p.fst +":\t" + p.snd);
+//        for(Pair p : memoryMap){
+//            System.out.println(p.fst +":\t" + p.snd);
+//        }
+        Iterator it = memoryresultMap.entrySet().iterator();
+        while(it.hasNext()){
+            Map.Entry pair = (Map.Entry)it.next();
+            System.out.println(pair.getKey() + ":\t" + pair.getValue());
+            it.remove();
         }
 
     }
@@ -381,9 +387,26 @@ public class TwoPassLinker {
     }
 
     public static void main(String[] args) throws IOException {
-        TwoPassLinker newLinker = new TwoPassLinker("input-4.txt");
-        newLinker.firstPass();
 
+        String FILE_DIR = "/Users/lizichen1/Google_Drive/OS_Sp17/homework/src/Two-Pass-Linker-master/inputs/";
+
+        String filePath;
+        TwoPassLinker newLinker = null;
+        if(args.length == 1){ // java TwoPassLinker input-5.txt
+            filePath = args[0];
+            newLinker = new TwoPassLinker(filePath);
+        }else if (args.length == 2){ // for testing java TwoPassLinker -d input-5.txt
+            if(args[0].equals("-t")){
+                filePath = args[1];
+                newLinker = new TwoPassLinker(FILE_DIR+filePath);
+            }
+        }else{
+            filePath="input-5.txt";
+            newLinker = new TwoPassLinker(FILE_DIR+filePath);
+            //throw new IllegalArgumentException("\nERROR! Wrong Input File Path!\nTry input format as:\njava TwoPassLinker input-5.txt");
+        }
+
+        newLinker.firstPass();
         //newLinker.printModules();
 
         boolean verify_1 = newLinker.isValidDefinitionList();
@@ -400,4 +423,4 @@ public class TwoPassLinker {
     }
 }
 
-//TODO: 1) Cmd prompt 2) Detailed Error Msg 3) Minor Refactor
+//TODO: 1) Cmd prompt 2) Detailed Error Msg
