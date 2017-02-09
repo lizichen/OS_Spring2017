@@ -1,8 +1,6 @@
 package HW1;
 
-import com.sun.tools.javac.util.Pair;
 
-import java.util.ArrayList;
 
 /**
  * Created by lizichen1 on 2/6/17.
