@@ -247,8 +247,7 @@ public class TwoPassLinker {
         return newArr;
     }
 
-    /**
-     • If a symbol is multiply defined, print an error message and use the value given in the first definition.
+    /**If a symbol is multiply defined, print an error message and use the value given in the first definition.
      */
     private boolean isValidDefinitionList(){
         boolean isValid = true;
@@ -268,8 +267,7 @@ public class TwoPassLinker {
         return isValid;
     }
 
-    /**
-     • If a symbol is used but not defined, print an error message and use the value zero.
+    /**If a symbol is used but not defined, print an error message and use the value zero.
      */
     private boolean hasAllNeededSymbol(){
         boolean hasAll = true;
@@ -286,8 +284,7 @@ public class TwoPassLinker {
         return hasAll;
     }
 
-    /**
-     • If a symbol is defined but not used, print a warning message and continue.
+    /**If a symbol is defined but not used, print a warning message and continue.
      */
     private boolean hasNoRedundantDefine(){
         boolean hasNoRedundancy = true;
@@ -309,8 +306,7 @@ public class TwoPassLinker {
         }
         return hasNoRedundancy;
     }
-    /**
-    • If multiple symbols are listed as used in the same instruction, print an error message and ignore all but the first usage given.
+    /**If multiple symbols are listed as used in the same instruction, print an error message and ignore all but the first usage given.
     */
     private boolean hasNoContradictedUsePosition(){
         boolean hasNoContradictedUsePosition = true;
