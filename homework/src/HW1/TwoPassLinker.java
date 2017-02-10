@@ -32,6 +32,9 @@ public class TwoPassLinker {
     private String[] tokens;
 
     private ArrayList<DefinitionUnit> definitionList = new ArrayList<>();
+    //TODO: remove after refactoring the Module class! used for storing the module order of a definition unit.
+    private Hashtable<String, Integer> definitionSymModuleOrderNumberMap = new Hashtable<>();
+
     private Hashtable definitionTable = new Hashtable();
     private ArrayList<Module> moduleList = new ArrayList<>();
 
@@ -55,6 +58,7 @@ public class TwoPassLinker {
 
         ArrayList<UseUnit> currentUseList = new ArrayList<>();
         int currentNumberOfUsages = 0;
+        int moduleOrder = 1;
 
         DefinitionUnit newDef = null; //TODO: this is a make-up approach, should include definition inside a module! Refactor later!
         while(i<this.tokens.length) {
@@ -73,10 +77,13 @@ public class TwoPassLinker {
                             String loc = tokens[i];
                             newDef = new DefinitionUnit(sym, Integer.valueOf(loc)+baseAdd);
                             this.definitionList.add(newDef);
+                            this.definitionSymModuleOrderNumberMap.put(sym, moduleOrder);
                         }
+                        System.out.println("number of definitions: "+numberOfDef);
                         passingMode = 2;
                         i++;
                     }
+                    moduleOrder++;
                 }else{
                     System.out.println(FIRST_DIGIT_ERROR);
                     System.exit(-1);
@@ -236,6 +243,7 @@ public class TwoPassLinker {
             if(this.definitionTable.containsKey(symbol)){
                 this.errors.add(symbol + DUPLICATION_ERROR);
                 this.definitionList.remove(def);
+                this.definitionSymModuleOrderNumberMap.remove(symbol);
                 isValid = false;
             }else{
                 this.definitionTable.put(symbol, location);
@@ -248,15 +256,18 @@ public class TwoPassLinker {
      */
     private boolean hasAllNeededSymbol(){
         boolean hasAll = true;
+        int moduleOrder = 1;
         for(Module module : this.moduleList){
             for(UseUnit unit : module.useList){
                 if(!this.definitionTable.containsKey(unit.symbol)){
                     this.definitionList.add(new DefinitionUnit(unit.symbol, 0));
+                    this.definitionSymModuleOrderNumberMap.put(unit.symbol, moduleOrder);
                     this.errors.add(unit.symbol+MISS_DEFINE_ERROR);
                     this.definitionTable.put(unit.symbol, 0);
                     hasAll = false;
                 }
             }
+            moduleOrder++;
         }
         return hasAll;
     }
@@ -276,7 +287,8 @@ public class TwoPassLinker {
         }
         for(Object key : cloneDefTable.keySet()){
             if((int)cloneDefTable.get(key) != -1){
-                this.errors.add("Warning: "+key.toString()+" was defined but never used."); //TODO: do we need to specify which module?
+                int moduleOrder = this.definitionSymModuleOrderNumberMap.get(key.toString());
+                this.errors.add("Warning: "+key.toString()+" was defined in module " +moduleOrder+" but never used.");
                 hasNoRedundancy = false;
             }
         }
@@ -305,7 +317,7 @@ public class TwoPassLinker {
                     else{
                         // remove the useage
                         u.positions.remove(idx);
-                        this.errors.add("ERROR: "+u.symbol+" is trying to apply on "+pos+" instruction that has been applied, first apply symbol will be used.");
+                        this.errors.add("ERROR: "+u.symbol+" is trying to apply on "+pos+" instruction that has been applied. Multiple variables used, first apply symbol will be used.");
                         hasNoContradictedUsePosition = false;
                     }
                 }
@@ -371,9 +383,9 @@ public class TwoPassLinker {
                 newLinker = new TwoPassLinker(FILE_DIR+filePath);
             }
         }else{
-            //filePath="input-5.txt";
-            //newLinker = new TwoPassLinker(FILE_DIR+filePath);
-            throw new IllegalArgumentException("\nERROR! Wrong Input File Path!\nTry input format as:\njava TwoPassLinker input-5.txt");
+            filePath="input-9.txt";
+            newLinker = new TwoPassLinker(FILE_DIR+filePath);
+            //throw new IllegalArgumentException("\nERROR! Wrong Input File Path!\nTry input format as:\njava TwoPassLinker input-5.txt");
         }
 
         newLinker.firstPass();
@@ -393,6 +405,7 @@ public class TwoPassLinker {
         }
     }
 
+    // For testing use only
     private void printModules(){
         for (Module module : this.moduleList){
             System.out.println(module.baseAddr);
@@ -410,4 +423,4 @@ public class TwoPassLinker {
     }
 }
 
-//TODO: 2) Detailed Error Msg ? 3) Minor Refactor!
+//TODO: Refactor the Module Class!!!!
