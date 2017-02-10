@@ -1,0 +1,11 @@
+*.class
+
+*.log
+
+
+# Package Files #
+*.zip
+*.tar.gz
+*.rar
+
+
