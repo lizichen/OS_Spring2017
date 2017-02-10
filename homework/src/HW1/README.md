@@ -48,3 +48,7 @@ lc3397@linax1[src]$ java HW1/TwoPassLinker SampleData/inputs/input-4.txt
     X21 Error: This variable is multiply defined; first value used.
     Error: Module 1 has instruction: [A 2456] that has absolute address exceeds machine size; zero used.
 ```
+
+
+#### TODO:
+Refactor the Module Class for better data structure and time efficiency.

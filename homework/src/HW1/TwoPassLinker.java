@@ -70,7 +70,7 @@ public class TwoPassLinker {
                         i++;
                     }
                     else{
-                        for(int j=1;j<=numberOfDef;j++){
+                        for(int j=1;j<=numberOfDef;j++){ // it's possible to have multiple definitions
                             i++;
                             String sym = tokens[i];
                             i++;
@@ -383,9 +383,9 @@ public class TwoPassLinker {
                 newLinker = new TwoPassLinker(FILE_DIR+filePath);
             }
         }else{
-            filePath="input-9.txt";
-            newLinker = new TwoPassLinker(FILE_DIR+filePath);
-            //throw new IllegalArgumentException("\nERROR! Wrong Input File Path!\nTry input format as:\njava TwoPassLinker input-5.txt");
+            //filePath="input-9.txt";
+            //newLinker = new TwoPassLinker(FILE_DIR+filePath);
+            throw new IllegalArgumentException("\nERROR! Wrong Input File Path!\nTry input format as:\njava TwoPassLinker input-5.txt");
         }
 
         newLinker.firstPass();
