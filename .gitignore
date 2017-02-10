@@ -2,10 +2,10 @@
 
 *.log
 
-
 # Package Files #
 *.zip
 *.tar.gz
 *.rar
 
-
+# IDE Specific #
+homework/.idea/

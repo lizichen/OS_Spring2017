@@ -18,11 +18,15 @@ import java.nio.file.Paths;
 public class TwoPassLinker {
     private static final String DUPLICATION_ERROR = " Error: This variable is multiply defined; first value used.";
     private static final String MISS_DEFINE_ERROR = " Error: This variable is NOT defined; zero used.";
+    public static final String FIRST_DIGIT_ERROR = "Something is wrong! The first item in each list MUST be a digit!";
+
     private static final String EMPTY_STRING = "";
     private static final String IMMEDIATE = "I";
     private static final String ABSOLUTE  = "A";
     private static final String RELATIVE  = "R";
     private static final String EXTERNAL  = "E";
+
+    public static final String FILE_DIR = "/Users/lizichen1/Google_Drive/OS_Sp17/homework/src/SampleData/inputs/";
 
     private String inputString;
     private String[] tokens;
@@ -74,7 +78,7 @@ public class TwoPassLinker {
                         i++;
                     }
                 }else{
-                    System.out.println("Something is wrong! The first item in each list MUST be a digit!");
+                    System.out.println(FIRST_DIGIT_ERROR);
                     System.exit(-1);
                 }
             }else if(passingMode == 2){
@@ -86,7 +90,7 @@ public class TwoPassLinker {
                     }
                     passingMode = 3;
                 }else{
-                    System.out.println("Something is wrong! The first item in each list MUST be a digit!");
+                    System.out.println(FIRST_DIGIT_ERROR);
                     System.exit(-1);
                 }
             }else if(passingMode == 3){
@@ -119,7 +123,7 @@ public class TwoPassLinker {
                     passingMode = 1;
                     newDef = null;
                 }else{
-                    System.out.println("Something is wrong! The first item in each list MUST be a digit!");
+                    System.out.println(FIRST_DIGIT_ERROR);
                     System.exit(-1);
                 }
             }
@@ -148,22 +152,6 @@ public class TwoPassLinker {
         System.out.println("Symbol Table");
         for (DefinitionUnit i:this.definitionList) {
             System.out.println(i.sym+" = "+i.loc);
-        }
-    }
-
-    private void printModules(){
-        for (Module module : this.moduleList){
-            System.out.println(module.baseAddr);
-            System.out.print(module.numberOfUsage+" ");
-            for(UseUnit use : module.useList){
-                System.out.print(use.symbol+" "+use.positions+" -1 ");
-            }
-            System.out.print("\n");
-            System.out.print(module.numberOfProgramText+" ");
-            for(ProgramTextUnit unit : module.programTextList){
-                System.out.print(unit.type+" "+unit.word+" ");
-            }
-            System.out.print("\n\n");
         }
     }
 
@@ -372,8 +360,6 @@ public class TwoPassLinker {
 
     public static void main(String[] args) throws IOException {
 
-        String FILE_DIR = "/Users/lizichen1/Google_Drive/OS_Sp17/homework/src/SampleData/inputs/";
-
         String filePath;
         TwoPassLinker newLinker = null;
         if(args.length == 1){ // java TwoPassLinker input-5.txt
@@ -404,6 +390,22 @@ public class TwoPassLinker {
 
         if(!(verify_1 && verify_2 && verify_3 && verify_4)){
             newLinker.printErrorAndWarnings();
+        }
+    }
+
+    private void printModules(){
+        for (Module module : this.moduleList){
+            System.out.println(module.baseAddr);
+            System.out.print(module.numberOfUsage+" ");
+            for(UseUnit use : module.useList){
+                System.out.print(use.symbol+" "+use.positions+" -1 ");
+            }
+            System.out.print("\n");
+            System.out.print(module.numberOfProgramText+" ");
+            for(ProgramTextUnit unit : module.programTextList){
+                System.out.print(unit.type+" "+unit.word+" ");
+            }
+            System.out.print("\n\n");
         }
     }
 }
