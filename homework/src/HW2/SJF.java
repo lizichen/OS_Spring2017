@@ -1,20 +1,21 @@
 package HW2;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.ListIterator;
+import java.io.File;
+import java.util.*;
 
 /**
  * Created by lizichen1 on 3/8/17.
  */
 public class SJF extends RR_Scheduler{
 
+    int numberOfProcesses = 0;
 
-    public SJF(boolean verbose, ArrayList<Process_RR> processes, int quantum) {
+   // SJF(allprocess, quantum, verbose, numberOfProcesses);
+    public SJF(ArrayList<Process_RR> processes, int quantum, boolean verbose, int numberOfProcesses) {
         super(verbose, processes);
         this.name = "Shortest Job First";
         this.quantum = quantum;
+        this.numberOfProcesses = numberOfProcesses;
         setQuantum(processes);
     }
 
@@ -44,7 +45,6 @@ public class SJF extends RR_Scheduler{
         // Now that we have the shortest ready process, set it to the ready queue
         // Only if it is not yet terminated, not blocked, and not running
         if (!readyQueue.contains(p) && !blockedList.contains(p) && p.getState() != 2) readyQueue.addFirst(p);
-        // dPrint();
 
         ListIterator<Process_RR> i = ready.listIterator();
     }
@@ -64,6 +64,50 @@ public class SJF extends RR_Scheduler{
 
     public static void main(String[] args) {
 
+        String input = "/Users/lizichen1/Google_Drive/OS_Sp17/homework/src/HW2/input_data/input-6.txt";
+
+        try {
+            File inFile = new File(input);
+            Scanner scanner = new Scanner(inFile);
+            String data = scanner.useDelimiter("\\Z").next();
+
+
+            scanner.close();
+
+            int quantum = 2;
+            boolean verbose = true;
+
+            data = data.replaceAll("[()]", "");
+
+
+            String[] tokens = data.split("\\s+");
+
+            int numberOfProcesses = Integer.valueOf(tokens[0]);
+
+            ArrayList<Process_RR> allprocess = new ArrayList<>();
+
+            for(int i=1;i<tokens.length;i+=4){
+                System.out.printf("%d, %d, %d, %d \n", Integer.valueOf(tokens[i]), Integer.valueOf(tokens[i+1]), Integer.valueOf(tokens[i+2]), Integer.valueOf(tokens[i+3]));
+                Process_RR newProcess = new Process_RR(Integer.valueOf(tokens[i]), Integer.valueOf(tokens[i+1]), Integer.valueOf(tokens[i+2]), Integer.valueOf(tokens[i+3]));
+                allprocess.add(newProcess);
+            }
+
+            SJF sjf = new SJF(allprocess, quantum, verbose, numberOfProcesses);
+
+
+            System.out.println("The original input was: " + sjf.getOriginalProcesses());
+            System.out.println("The (sorted) input was: " + sjf.getSortedProcesses());
+            System.out.println();
+
+            while (sjf.notAllTerminated()) {
+                sjf.cycle();
+            }
+            sjf.printResults();
+
+        }
+        catch (Exception e) {
+            System.out.println(e);
+        }
     }
 
 }
