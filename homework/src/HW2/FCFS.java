@@ -13,7 +13,7 @@ import java.util.Collections;
 public class FCFS {
 
     int numberOfProcesses;
-    ArrayList<Process> processes = new ArrayList<>();
+    ArrayList<Process_FCFS> processFCFSes = new ArrayList<>();
     RandomNumberProvider worktime = new RandomNumberProvider();
     int overallFinishTime = 0;
 
@@ -22,15 +22,15 @@ public class FCFS {
         this.numberOfProcesses = Integer.valueOf(tokens[0]);
 
         for(int i=1;i<tokens.length;i+=4){
-            Process newProcess = new Process(tokens[i].substring(1), tokens[i+1], tokens[i+2], tokens[i+3].substring(0, tokens[i+3].length()-1));
-            this.processes.add(newProcess);
+            Process_FCFS newProcessFCFS = new Process_FCFS(tokens[i].substring(1), tokens[i+1], tokens[i+2], tokens[i+3].substring(0, tokens[i+3].length()-1));
+            this.processFCFSes.add(newProcessFCFS);
         }
     }
 
     private void sortProcessesByArrivalTime() { // Sort the Arrival Time ascendingly.
-        Collections.sort(this.processes);
+        Collections.sort(this.processFCFSes);
         System.out.print("The (sorted) input was: "+this.numberOfProcesses+" ");
-        for(Process p : this.processes){
+        for(Process_FCFS p : this.processFCFSes){
             System.out.print("("+p.ArrivalTime+" "+p.BurstRange+" "+p.CPUTime+" "+p.IOMultiplier+") ");
         }
         System.out.println(" ");
@@ -55,16 +55,16 @@ public class FCFS {
                     numberOfActiveProcess++;
                 }
             }
-            //System.out.println("# Active Process = "+numberOfActiveProcess);
+            //System.out.println("# Active Process_FCFS = "+numberOfActiveProcess);
             if(result == 1){
-                System.out.println("Success! All processes completed!");
+                System.out.println("Success! All processFCFSes completed!");
                 break;
             }
 
             System.out.print("Before Cycle\t"+(ticker+1)+":\t");
 
             for(int i=0;i<numberOfProcesses;i++){
-                Process p = this.processes.get(i);
+                Process_FCFS p = this.processFCFSes.get(i);
                 if(p.CPUTime <= 0){
                     completedProcess[i] = 1;
                     if(p.finishUpTime == 0) {
@@ -180,8 +180,8 @@ public class FCFS {
         int sumWaitingTime = 0;
 
         for(int i=0;i<numberOfProcesses;i++){
-            Process p = this.processes.get(i);
-            System.out.println("Process "+i+":");
+            Process_FCFS p = this.processFCFSes.get(i);
+            System.out.println("Process_FCFS "+i+":");
             System.out.println("\t\t(A, B, C, M) = ("+p.ArrivalTime+", "+p.BurstRange+", "+p.CPUTime_copy+", "+p.IOMultiplier+")");
             sumRunningTime+=p.CPUTime_copy;
 
@@ -201,7 +201,7 @@ public class FCFS {
 
         System.out.printf("\tCPU Utilization: %.6f \n",     ((double)sumRunningTime / (double)this.overallFinishTime));
         System.out.printf("\tI/O Utilization: %.6f \n",     ((double)sumIOTime/(double)this.overallFinishTime));
-        System.out.printf("\tThroughput: %.6f processes per hundred cycles\n",           (double)(100 * this.numberOfProcesses)/this.overallFinishTime);
+        System.out.printf("\tThroughput: %.6f processFCFSes per hundred cycles\n",           (double)(100 * this.numberOfProcesses)/this.overallFinishTime);
         System.out.printf("\tAverage turnaround time: %.6f\n", (double)(sumTurnaroundTime/this.numberOfProcesses));
         System.out.printf("\tAverage waiting time: %.6f\n",    (double)(sumWaitingTime/this.numberOfProcesses));
 

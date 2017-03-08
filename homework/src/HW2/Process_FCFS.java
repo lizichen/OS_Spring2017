@@ -3,7 +3,7 @@ package HW2;
 /**
  * Created by lizichen1 on 3/3/17.
  */
-public class Process implements Comparable<Process>{
+public class Process_FCFS implements Comparable<Process_FCFS>{
 
     int ArrivalTime;
     int BurstRange;
@@ -21,7 +21,7 @@ public class Process implements Comparable<Process>{
 
     int status; // -1 for unstarted, 0 for ready, 1 for running, 2 for blocked, 3 for complete
 
-    public Process(String A, String B, String C, String M){
+    public Process_FCFS(String A, String B, String C, String M){
         this.ArrivalTime = Integer.valueOf(A);
         this.BurstRange = Integer.valueOf(B);
         this.CPUTime = Integer.valueOf(C);
@@ -35,7 +35,7 @@ public class Process implements Comparable<Process>{
         this.overallWaitingTime = 0;
     }
 
-    public int compareTo(Process anotherProcess) {
+    public int compareTo(Process_FCFS anotherProcess) {
 
         return this.ArrivalTime - anotherProcess.ArrivalTime;
     }
