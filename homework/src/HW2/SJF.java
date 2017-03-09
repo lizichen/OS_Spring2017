@@ -75,6 +75,23 @@ public class SJF extends RR_Scheduler{
         int quantum = 2;
         boolean verbose = true;
 
+        // java RR --verbose input-6.txt
+        // java RR input-6.txt
+        if(args.length == 2){
+            if(args[0].equals("--verbose")){
+                verbose = true;
+                input = args[1];
+            }
+            else{
+                verbose = false;
+                System.out.println("Please type\n java RR --verbose input.txt or java RR input.txt");
+                System.exit(-1);
+            }
+        }else if(args.length == 1){
+            input = args[0];
+            verbose = false;
+        }
+
         try {
             File inFile = new File(input);
             Scanner scanner = new Scanner(inFile);

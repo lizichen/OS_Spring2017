@@ -1,6 +1,5 @@
 package HW2;
 
-import com.sun.org.apache.bcel.internal.generic.NEW;
 
 /**
  * Created by lizichen1 on 3/6/17.

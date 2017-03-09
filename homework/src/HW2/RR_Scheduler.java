@@ -14,6 +14,7 @@ public abstract class RR_Scheduler {
     public static final int LARGE_QUANTUM_INTEGER = 99999;
     public static final String RESET_BURST_TO_ZERO = "0";
 
+
     int quantum;
 
     private int totalIoBlockCycles;
@@ -26,7 +27,8 @@ public abstract class RR_Scheduler {
     int cycleNum;
     boolean verbose;
     boolean noProcessRunning;
-    String name;
+
+
     String originalProcesses;
     String sortedProcesses;
 
@@ -44,7 +46,7 @@ public abstract class RR_Scheduler {
 
         this.processes = new ArrayList();
 
-        File file = new File("input/random-numbers");
+        File file = new File(Utils.RANDOM_NUMBER_FILE);
         random_integers = new Scanner(file);
 
         cycleNum = 0;
@@ -192,7 +194,6 @@ public abstract class RR_Scheduler {
 
         int i;
 
-        System.out.println("The scheduling algorithm used was " + this.name+"\n");
         for (i = 0; i < numProcesses; i++) {
             System.out.println("Process #" + i + ": ");
             Process_RR p = processes.get(i);
@@ -224,6 +225,8 @@ public abstract class RR_Scheduler {
         sb.append("Average turnaround time: " + f.format(averageTurnAroundTime)+Utils.NEWLINE_SPACE);
         sb.append("Average waiting time: " + f.format(averageWaitTime));
         System.out.println(sb.toString());
+
+        System.out.println("\nPlease Use Command: java {RR, SJF, FCFS, Uniprogrammed} --verbose input.txt ");
     }
 
     protected ArrayList<Process_RR> sort(ArrayList<Process_RR> processes){
