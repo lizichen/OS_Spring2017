@@ -1,43 +1,46 @@
 package HW2;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.LinkedList;
-import java.util.Scanner;
+import java.util.*;
 
 /**
  * Created by lizichen1 on 3/8/17.
  */
 public abstract class RR_Scheduler {
 
-    protected String schedulingAlgoName;
-    protected ArrayList<Process_RR> processes;
-    protected int numProcesses;
-    protected Scanner random;
-    protected int cycleNum;
-    protected boolean verbose;
-    protected boolean noProcessRunning;
-    protected String name;
-    protected String originalProcesses;
-    protected String sortedProcesses;
+    public static final String BEFORE_CYCLE_4S = "Before Cycle \t%4s:";
 
-    // Holds all processes in a specific state
-    protected ArrayList<Process_RR> unstarted;
-    protected LinkedList<Process_RR> ready;
-    protected LinkedList<Process_RR> readyQueue;
-    protected LinkedList<Process_RR> blockedList;
-    protected ArrayList<Process_RR> terminated;
-    protected Comparator<Process_RR> comparator;
-    protected int quantum;
+    ArrayList<Process_RR> processes;
+    int numProcesses;
+    Scanner random_integers;
+    int cycleNum;
+    boolean verbose;
+    boolean noProcessRunning;
+    String name;
+    String originalProcesses;
+    String sortedProcesses;
+
+    ArrayList<Process_RR> unstarted;
+    LinkedList<Process_RR> ready;
+    LinkedList<Process_RR> readyQueue;
+    LinkedList<Process_RR> blockedList;
+    ArrayList<Process_RR> terminated;
+
+    int quantum;
 
     private int totalIoBlockCycles;
 
-    public RR_Scheduler(boolean verbose, ArrayList<Process_RR> processes) {
-        this.processes = new ArrayList<Process_RR>();
-        initRandomStream();
+
+    public RR_Scheduler(boolean verbose, ArrayList<Process_RR> processes) throws FileNotFoundException {
+        this.processes = new ArrayList();
+
+        File file = new File("input/random-numbers");
+        random_integers = new Scanner(file);
+
+
         cycleNum = 0;
         this.verbose = verbose;
         this.numProcesses = processes.size();
@@ -46,10 +49,14 @@ public abstract class RR_Scheduler {
         this.sortedProcesses = processStringFromList(this.numProcesses, this.processes);
         this.unstarted = processes;
         noProcessRunning = true;
-        this.ready = new LinkedList<Process_RR>();
-        this.readyQueue = new LinkedList<Process_RR>();
-        this.blockedList = new LinkedList<Process_RR>();
-        this.terminated = new ArrayList<Process_RR>();
+
+
+        this.ready = new LinkedList();
+        this.readyQueue = new LinkedList();
+        this.blockedList = new LinkedList();
+        this.terminated = new ArrayList();
+
+
         this.totalIoBlockCycles = 0;
         this.quantum = 99999;
     }
@@ -69,25 +76,29 @@ public abstract class RR_Scheduler {
         return sb.toString();
     }
 
-    // Sorts the arrayList depending on the required sorting algorithm
-    protected abstract ArrayList<Process_RR> sort(ArrayList<Process_RR> processes);
+    protected ArrayList<Process_RR> sort(ArrayList<Process_RR> processes){
+        Collections.sort(processes, new Comparator<Process_RR>() {
+            public int compare(Process_RR process_A, Process_RR process_B) {
+                int arrivalA = process_A.A;
+                int arrivalB = process_B.A;
+                if (arrivalA > arrivalB)
+                    return 1;
+                else if (arrivalA < arrivalB)
+                    return -1;
+                else
+                    return 0;
+            }
+        });
+        return processes;
+    }
 
-    // Simulates one cpu cycle
+    // call for each cycle
     public void cycle() {
-        // stall(40);
         if(verbose)
-            preCyclePrint();
+            cycleStatus();
         tickProcesses();
         prepNextTick();
         cycleNum++;
-    }
-
-    public void stall(int stallCycle) {
-        if (cycleNum == stallCycle) {
-            System.out.println("STALLING ON PURPOSE!");
-            while (true) {
-            }
-        }
     }
 
     protected void tickProcesses() {
@@ -96,15 +107,9 @@ public abstract class RR_Scheduler {
         }
     }
 
-    // Maintains the necessary data structures for determining process state changes
-    // Prepares for tickProcesses() call by setting the correct state for all processes
     public void prepNextTick() {
         readyAllUnstarted();
-        // printBlockedList();
-        // Maintain the queue of ready processes
-        maintainReadyQueue();
-        // printLinkedList(readyQueue);
-
+        updateReadyQueue();
         if (noProcessRunning && !readyQueue.isEmpty()) {
             Process_RR p = readyQueue.removeLast();
             if (cycleNum == 17) {
@@ -123,25 +128,20 @@ public abstract class RR_Scheduler {
         }
     }
 
-    public void printLinkedList(LinkedList<Process_RR> list) {
-        for (Process_RR i : list) {
-            System.out.print(i.toString() + " |");
-        }
-        System.out.println();
-    }
+    protected abstract void updateReadyQueue(); // Abstract method for specific scheduling algorithm to implement
 
-    // Abstract method for specific scheduling algorithm to implement
-    protected abstract void maintainReadyQueue();
-
-    public boolean notAllTerminated() {
+    public boolean incomplete() {
         return (terminated.size() < numProcesses);
     }
+
     // Ready all unstarted processes
     private void readyAllUnstarted() {
         noProcessRunning = true;
         boolean atLeastOneBlocked = false;
         for (Process_RR p : processes) {
+
             int state = p.getState();
+
             if (state == 0 && cycleNum >= p.getA()) {
                 p.setReady();
                 this.ready.add(p);
@@ -173,101 +173,64 @@ public abstract class RR_Scheduler {
 
     }
 
-    public void printProcesses() {
-        System.out.println("Printing all processes for this scheduler:");
-        System.out.println("----------------------");
-        for (int i = 0; i < processes.size(); i++) {
-            System.out.println("Process_FCFS " + i + ": " + processes.get(i).toString());
-        }
-    }
-
-    public String getName() {
-        return this.schedulingAlgoName;
-    }
-
-    public void addProcess(Process_RR p) {
-        processes.add(p);
-    }
-
     public ArrayList<Process_RR> getProcesses() {
         return processes;
     }
 
-    public void printBlockedList() {
-        System.out.print("blocked list: ");
-        for (Process_RR p : blockedList) {
-            System.out.print(p.getId() + " ");
-        }
-        System.out.println();
-    }
-
-    private void preCyclePrint() {
+    private void cycleStatus() {
         StringBuilder sb = new StringBuilder();
-        sb.append(String.format("Before cycle %4s:", cycleNum));
+        sb.append(String.format(BEFORE_CYCLE_4S, cycleNum));
         for (Process_RR p : processes) {
             int state = p.getState();
             String stateName;
             String burst;
             switch (state) {
-                case 0:		stateName = "unstarted";
+                case 0:
+                    stateName = Utils.UNSTARTED;
                     burst = "0";
                     break;
-                case 1:		stateName = "ready";
+                case 1:
+                    stateName = Utils.READY;
                     burst = "0";
                     break;
-                case 2:		stateName = "running";
-                    // burst = String.valueOf(quantum-(p.getBurstLeft()%quantum));
+                case 2:
+                    stateName = Utils.RUNNING;
                     burst = String.valueOf(p.getBurstLeft());
                     break;
-                case 3:		stateName = "blocked";
+                case 3:
+                    stateName = Utils.BLOCKED;
                     burst = String.valueOf(p.getBlockLeft());
                     break;
-                case 4:		stateName = "terminated";
+                case 4:
+                    stateName = Utils.TERMINATED;
                     burst = "0";
                     break;
-                default: 	stateName = "?";
+                default:
+                    stateName = Utils.UNKNOWN_STATE;
                     burst = "0";
                     break;
             }
-            sb.append(String.format("%12s%3s", stateName, burst));
+            sb.append(String.format("\t%12s%3s", stateName, burst));
         }
         System.out.println(sb.toString()+".");
     }
 
-    private void initRandomStream() {
-        try {
-            File file = new File("input/random-numbers");
-            if (file.exists()) random = new Scanner(file);
-            else System.out.println("Could not find random-numbers");
-        }
-        catch (Exception e) {
-            System.out.println(e);
-        }
-    }
-
     public int randomOS(int B) {
-        String next = random.nextLine();
+        String next = random_integers.nextLine();
         if (verbose) {
             System.out.println("Find burst when choosing next process to run: " + next + " / " + B + "= " + (Integer.parseInt(next) % B));
         }
         return 1 + (Integer.parseInt(next) % B);
     }
 
-    public void run() {
-        Process_RR p1 = new Process_RR(0,1,100,2);
-        while (true) {
-            break;
-        }
-
-        System.out.println("I AM RUNNING.");
-    }
-    public void printResults() {
+    public void printFinalSummary() {
         int finishingTime = 0;
         double cpuUtilization = 0;
         double throughput = 0;
         double avgTurnaroundTime = 0;
         double avgWaitTime = 0;
         double ioUtilization = 0;
+
         int i = 0;
 
         System.out.println("The scheduling algorithm used was " + this.name);
@@ -309,7 +272,10 @@ public abstract class RR_Scheduler {
         System.out.println(sb.toString());
     }
 
-    public String getOriginalProcesses() { return originalProcesses; }
+    public String getOriginalProcesses() {
+        return originalProcesses;
+    }
+
     public String getSortedProcesses() { return sortedProcesses; }
 
 }

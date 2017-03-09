@@ -1,19 +1,39 @@
 package HW2;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.*;
 
 /**
  * Created by lizichen1 on 3/8/17.
+ *
+ * Shortest-Job-First
+ *
+ *
+ Process      Burst Time
+
+ P1             6
+
+ P2             8
+
+ P3             7
+
+ P4             3
+
+ SJF scheduling Gantt chart
+ P4,    P1,     P3,     P2
+ 0 - 3  3 - 9   9 - 16  16 - 24
+
+ Average waiting time = (3 + 16 + 9 + 0) / 4 = 7
+
  */
 public class SJF extends RR_Scheduler{
 
+
     int numberOfProcesses = 0;
 
-   // SJF(allprocess, quantum, verbose, numberOfProcesses);
-    public SJF(ArrayList<Process_RR> processes, int quantum, boolean verbose, int numberOfProcesses) {
+    public SJF(ArrayList<Process_RR> processes, int quantum, boolean verbose, int numberOfProcesses) throws FileNotFoundException {
         super(verbose, processes);
-        this.name = "Shortest Job First";
         this.quantum = quantum;
         this.numberOfProcesses = numberOfProcesses;
         setQuantum(processes);
@@ -25,7 +45,7 @@ public class SJF extends RR_Scheduler{
         }
     }
 
-    protected void maintainReadyQueue() {
+    protected void updateReadyQueue() {
         Process_RR p = new Process_RR(0,0,0,0);
         p.setTimeLeft(10000);
         boolean shouldStop = true;
@@ -34,32 +54,18 @@ public class SJF extends RR_Scheduler{
             if (temp.getBurstLeft() > 0) {
                 return;
             }
-            // System.out.printf("Process_FCFS %d timeLeft: %d", temp.getId(), temp.timeLeft);
             if (temp.timeLeft < p.timeLeft) {
                 p = temp;
                 shouldStop = false;
             }
         }
-        if (shouldStop) return;
+        if (shouldStop)
+            return;
 
-        // Now that we have the shortest ready process, set it to the ready queue
-        // Only if it is not yet terminated, not blocked, and not running
-        if (!readyQueue.contains(p) && !blockedList.contains(p) && p.getState() != 2) readyQueue.addFirst(p);
+        if (!readyQueue.contains(p) && !blockedList.contains(p) && p.getState() != 2)
+            readyQueue.addFirst(p);
 
         ListIterator<Process_RR> i = ready.listIterator();
-    }
-
-    protected ArrayList<Process_RR> sort(ArrayList<Process_RR> processes) {
-        Collections.sort(processes, new Comparator<Process_RR>() {
-            public int compare(Process_RR a, Process_RR b) {
-                int arrivalA = a.getA();
-                int arrivalB = b.getA();
-                if (arrivalA > arrivalB) return 1;
-                else if (arrivalA < arrivalB) return -1;
-                else return 0;
-            }
-        });
-        return processes;
     }
 
     public static void main(String[] args) {
@@ -94,15 +100,14 @@ public class SJF extends RR_Scheduler{
 
             SJF sjf = new SJF(allprocess, quantum, verbose, numberOfProcesses);
 
-
-            System.out.println("The original input was: " + sjf.getOriginalProcesses());
-            System.out.println("The (sorted) input was: " + sjf.getSortedProcesses());
+            System.out.println(Utils.THE_ORIGINAL_INPUT_WAS + sjf.getOriginalProcesses());
+            System.out.println(Utils.THE_SORTED_INPUT_WAS + " " + sjf.getSortedProcesses());
             System.out.println();
 
-            while (sjf.notAllTerminated()) {
+            while (sjf.incomplete()) {
                 sjf.cycle();
             }
-            sjf.printResults();
+            sjf.printFinalSummary();
 
         }
         catch (Exception e) {

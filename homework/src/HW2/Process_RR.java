@@ -5,28 +5,17 @@ package HW2;
  */
 public class Process_RR {
 
-    int id;
-
-    // A - Arrival time
-    // B - The inclusive limit of a random cpu burst
-    // C - Total CPU time needed
-    // M - The multiplier for calculating I/O burst (CPU burst * M)
     int A, B, C, M;
-
-    // 0 - unstarted
-    // 1 - ready
-    // 2 - running
-    // 3 - blocked
-    // 4 - terminated
-    int state;
+    int id;
+    int state; // 0 - unstarted, 1 - ready, 2 - running, 3 - blocked, 4 - terminated.
 
     // Keep track of total IO Time (time in Blocked state)
-    int ioTime;
+    int total_ioTime;
 
     // Keep track of total wait time (time in Ready state)
     int waitTime;
 
-    // This is equal to C + ioTime + waitTime + A
+    // This is equal to C + total_ioTime + waitTime + A
     int finishTime;
 
     // This is equal to finishTime - A
@@ -45,9 +34,6 @@ public class Process_RR {
     // Tracks how much longer process has in cpuBurst
     int burstLeft;
 
-    // Tracks how many bursts have occured before a block
-    int burstCount;
-
     int quantumMax;
 
     public Process_RR(int A, int B, int C, int M) {
@@ -56,7 +42,7 @@ public class Process_RR {
         this.C = C;
         this.M = M;
         this.timeLeft = C;
-        this.ioTime = 0;
+        this.total_ioTime = 0;
         this.waitTime = 0;
         this.finishTime = 0;
         this.blockLeft = 0;
@@ -134,25 +120,20 @@ public class Process_RR {
 
     public void tick()  {
         switch (state) {
-            // Unstarted State - Do nothing
-            case 0: break;
-
-            // Ready State
-            case 1: handleReadyTick();
+            case 0:
                 break;
-
-            // Running State
-            case 2: handleRunTick();
+            case 1:
+                handleReadyTick();
                 break;
-
-            // Blocked State
-            case 3: handleBlockTick();
+            case 2:
+                handleRunTick();
                 break;
-
-            // Terminated State
-            case 4: handleTerminationTick();
+            case 3:
+                handleBlockTick();
                 break;
-
+            case 4:
+                handleTerminationTick();
+                break;
             default:
                 System.out.println("State unknown.");
         }
@@ -200,7 +181,7 @@ public class Process_RR {
         }
 
         if (blockLeft >= 0) {
-            ioTime++;
+            total_ioTime++;
             blockLeft--;
         }
 
@@ -224,8 +205,8 @@ public class Process_RR {
     }
 
     public String results() {
-        // System.out.format("Process_FCFS %d Finish time: this.c(%d) + ioTime(%d) + waitTime(%d) = %d\n", this.id, this.C, ioTime, waitTime, this.C + ioTime + waitTime);
-        finishTime = this.C + ioTime + waitTime + this.A;
+        // System.out.format("Process_FCFS %d Finish time: this.c(%d) + total_ioTime(%d) + waitTime(%d) = %d\n", this.id, this.C, total_ioTime, waitTime, this.C + total_ioTime + waitTime);
+        finishTime = this.C + total_ioTime + waitTime + this.A;
         turnaroundTime = finishTime - A;
 
         StringBuilder sb = new StringBuilder();
@@ -236,7 +217,7 @@ public class Process_RR {
         sb.append("\n        ");
         sb.append("Turnaround time: " + turnaroundTime);
         sb.append("\n        ");
-        sb.append("I/O time: " + ioTime);
+        sb.append("I/O time: " + total_ioTime);
         sb.append("\n        ");
         sb.append("Waiting time: " + waitTime);
         return sb.toString();
@@ -250,7 +231,7 @@ public class Process_RR {
     public int getBurstLeft() { return this.burstLeft; }
     public int getWaitTime() { return this.waitTime; }
     public int getFinishTime() { return this.finishTime; }
-    public int getIoTime() { return this.ioTime; }
+    public int getTotal_ioTime() { return this.total_ioTime; }
     public int getTurnaroundTime() { return this.turnaroundTime; }
     public void setId(int id) { this.id = id; }
     public int getId() { return this.id; }

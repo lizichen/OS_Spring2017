@@ -1,9 +1,8 @@
 package HW2;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Scanner;
 
 /**
@@ -13,13 +12,13 @@ public class Uniprogrammed extends RR_Scheduler {
 
 
     //(allprocess, quantum, verbose, numberOfProcesses);
-    public Uniprogrammed( ArrayList<Process_RR> processes, boolean verbose, int numberOfProcesses) {
+    public Uniprogrammed( ArrayList<Process_RR> processes, boolean verbose, int numberOfProcesses) throws FileNotFoundException {
         super(verbose, processes);
         this.name = "Uniprogrammed";
     }
 
 
-    protected void maintainReadyQueue() {
+    protected void updateReadyQueue() {
         // dPrint();
         // Only allow a process that is not yet terminated into the ready queue
         // Get the first process not yet terminated
@@ -38,29 +37,6 @@ public class Uniprogrammed extends RR_Scheduler {
         if (!readyQueue.contains(p) && !blockedList.contains(p) && p.getState() != 2) readyQueue.addFirst(p);
         // dPrint();
     }
-
-    protected ArrayList<Process_RR> sort(ArrayList<Process_RR> processes) {
-
-        Collections.sort(processes, new Comparator<Process_RR>() {
-            public int compare(Process_RR a, Process_RR b) {
-                int arrivalA = a.getA();
-                int arrivalB = b.getA();
-                if (arrivalA > arrivalB) return 1;
-                else if (arrivalA < arrivalB) return -1;
-                else return 0;
-            }
-        });
-
-        return processes;
-    }
-
-//    private void dPrint() {
-//        System.out.println("Ready queue: ");
-//        for (Process_RR p : readyQueue) {
-//            System.out.print(p.getId() + " ");
-//        }
-//        System.out.println();
-//    }
 
     public static void main(String[] args) {
 
@@ -100,10 +76,10 @@ public class Uniprogrammed extends RR_Scheduler {
             System.out.println("The (sorted) input was: " + uni.getSortedProcesses());
             System.out.println();
 
-            while (uni.notAllTerminated()) {
+            while (uni.incomplete()) {
                 uni.cycle();
             }
-            uni.printResults();
+            uni.printFinalSummary();
 
         }
         catch (Exception e) {
