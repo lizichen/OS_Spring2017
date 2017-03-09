@@ -108,7 +108,9 @@ public class RR extends RR_Scheduler{
 
             System.out.println();
 
-            while (rr.incomplete()) {
+
+
+            while (rr.terminated.size() < rr.numProcesses) {
                 rr.cycle();
             }
             rr.printFinalSummary();
