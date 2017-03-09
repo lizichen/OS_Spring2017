@@ -89,12 +89,12 @@ public class Process_RR {
     }
 
     private void handleBlockTick() {
-        if (blockLeft <= 0) {
-            this.state = 1;
-        }
         if (blockLeft >= 0) {
             total_ioTime++;
             blockLeft--;
+        }
+        if (blockLeft <= 0) {
+            this.state = 1;
         }
     }
 
