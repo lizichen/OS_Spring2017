@@ -37,21 +37,21 @@ public class SJF extends RR_Scheduler{
         this.quantum = quantum;
         this.numberOfProcesses = numberOfProcesses;
         for (Process_RR p : processes) {
-            p.setQuantumMax(1000);
+            p.quantumMax = 1000;
         }
     }
 
     protected void updateReadyQueue() {
         Process_RR p = new Process_RR(0,0,0,0);
 
-        p.setTimeRemaining(INTEGER_CONSTANT);
+        p.timeRemaining = INTEGER_CONSTANT;
 
         boolean shouldStop = true;
         for (Process_RR temp : ready) {
 
             if (terminated.contains(temp))
                 continue;
-            if (temp.getCpuBurstRemaining() > 0) {
+            if (temp.cpuBurstRemaining > 0) {
                 return;
             }
             if (temp.timeRemaining < p.timeRemaining) {
@@ -63,7 +63,7 @@ public class SJF extends RR_Scheduler{
         if (shouldStop)
             return;
 
-        if (!readyQueue.contains(p) && !blockedList.contains(p) && p.getState() != 2)
+        if (!readyQueue.contains(p) && !blockedList.contains(p) && p.state != 2)
             readyQueue.addFirst(p);
 
         ListIterator<Process_RR> i = ready.listIterator();
@@ -94,11 +94,11 @@ public class SJF extends RR_Scheduler{
 
             SJF sjf = new SJF(allprocess, quantum, verbose, numberOfProcesses);
 
-            System.out.println(Utils.THE_ORIGINAL_INPUT_WAS + sjf.getOriginalProcesses());
-            System.out.println(Utils.THE_SORTED_INPUT_WAS + " " + sjf.getSortedProcesses());
+            System.out.println(Utils.THE_ORIGINAL_INPUT_WAS + sjf.originalProcesses);
+            System.out.println(Utils.THE_SORTED_INPUT_WAS + " " + sjf.sortedProcesses);
             System.out.println();
 
-            while (sjf.incomplete()) {
+            while (sjf.terminated.size() < sjf.numProcesses) {
                 sjf.cycle();
             }
             sjf.printFinalSummary();

@@ -31,7 +31,7 @@ public class RR extends RR_Scheduler{
         this.allProcesses = processes;
 
         for (Process_RR p : processes) {
-            p.setQuantumMax(2);
+            p.quantumMax = 2;
         }
     }
 
@@ -86,11 +86,14 @@ public class RR extends RR_Scheduler{
 
             RR rr = new RR(allprocess, quantum, verbose, numberOfProcesses);
 
-            System.out.println(Utils.THE_ORIGINAL_INPUT_WAS + rr.getOriginalProcesses());
-            System.out.println(Utils.THE_SORTED_INPUT_WAS + rr.getSortedProcesses());
+            System.out.println(Utils.THE_ORIGINAL_INPUT_WAS + rr.originalProcesses);
+            System.out.println(Utils.THE_SORTED_INPUT_WAS + rr.sortedProcesses);
+
             System.out.println();
 
-            while (rr.incomplete()) {
+
+
+            while (rr.terminated.size() < rr.numProcesses) {
                 rr.cycle();
             }
             rr.printFinalSummary();

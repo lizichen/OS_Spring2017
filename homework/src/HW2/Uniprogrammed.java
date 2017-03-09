@@ -32,7 +32,7 @@ public class Uniprogrammed extends RR_Scheduler {
 
         if (!readyQueue.contains(p) &&
                 !blockedList.contains(p) &&
-                p.getState() != 2)
+                p.state != 2)
             readyQueue.addFirst(p);
     }
 
@@ -59,11 +59,11 @@ public class Uniprogrammed extends RR_Scheduler {
 
             Uniprogrammed uni = new Uniprogrammed(allprocess, verbose, numberOfProcesses);
 
-            System.out.println(Utils.THE_ORIGINAL_INPUT_WAS + uni.getOriginalProcesses());
-            System.out.println(Utils.THE_SORTED_INPUT_WAS + uni.getSortedProcesses());
+            System.out.println(Utils.THE_ORIGINAL_INPUT_WAS + uni.originalProcesses);
+            System.out.println(Utils.THE_SORTED_INPUT_WAS + uni.sortedProcesses);
             System.out.println();
 
-            while (uni.incomplete()) {
+            while (uni.terminated.size() < uni.numProcesses) {
                 uni.cycle();
             }
             uni.printFinalSummary();
