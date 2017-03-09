@@ -35,6 +35,29 @@ public class RR extends RR_Scheduler{
         }
     }
 
+    @Override
+    protected void updateReadyQueue() {
+
+        ListIterator<Process_RR> i = ready.listIterator();
+
+        Process_RR p;
+
+        while (i.hasNext()) {
+            p = i.next();
+
+            if (!readyQueue.contains(p))
+                readyQueue.addFirst(p);
+        }
+
+        i = readyQueue.listIterator();
+
+        while (i.hasNext()) {
+            p = i.next();
+            if (ready.contains(p))
+                ready.remove(p);
+        }
+    }
+
     public static void main(String[] args){
 
         String input = "/Users/lizichen1/Google_Drive/OS_Sp17/homework/src/HW2/input_data/input-6.txt";
@@ -77,19 +100,5 @@ public class RR extends RR_Scheduler{
             System.out.println(e);
         }
 
-    }
-
-    @Override
-    protected void updateReadyQueue() {
-        ListIterator<Process_RR> i = ready.listIterator();
-        while (i.hasNext()) {
-            Process_RR p = i.next();
-            if (!readyQueue.contains(p)) readyQueue.addFirst(p);
-        }
-        i = readyQueue.listIterator();
-        while (i.hasNext()) {
-            Process_RR p = i.next();
-            if (ready.contains(p)) ready.remove(p);
-        }
     }
 }

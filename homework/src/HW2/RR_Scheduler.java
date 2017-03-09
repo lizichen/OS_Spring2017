@@ -96,15 +96,13 @@ public abstract class RR_Scheduler {
     public void cycle() {
         if(verbose)
             cycleStatus();
-        tickProcesses();
-        prepNextTick();
-        cycleNum++;
-    }
 
-    protected void tickProcesses() {
         for (Process_RR p : processes) {
             p.tick();
         }
+
+        prepNextTick();
+        cycleNum++;
     }
 
     public void prepNextTick() {
@@ -117,8 +115,8 @@ public abstract class RR_Scheduler {
                 p.setToRun(random);
             }
             else {
-                if (p.burstLeft>0) {
-                    p.setToRun();
+                if (p.cpuBurstRemaining >0) {
+                    p.state = 2;
                 }
                 else {
                     int random = randomOS(p.getB());
@@ -134,7 +132,6 @@ public abstract class RR_Scheduler {
         return (terminated.size() < numProcesses);
     }
 
-    // Ready all unstarted processes
     private void readyAllUnstarted() {
         noProcessRunning = true;
         boolean atLeastOneBlocked = false;
@@ -143,38 +140,31 @@ public abstract class RR_Scheduler {
             int state = p.getState();
 
             if (state == 0 && cycleNum >= p.getA()) {
-                p.setReady();
+                p.state = 1;
                 this.ready.add(p);
             }
-
             if (state == 1) {
-                if (!ready.contains(p)) ready.add(p);
-                if (blockedList.contains(p)) blockedList.remove(p);
-            }
-            // Tracks if there is a currently running process
-            if (state == 2) {
-                // System.out.printf("Process_FCFS %d is running\n", p.getId());
+                if (!ready.contains(p))
+                    ready.add(p);
+                if (blockedList.contains(p))
+                    blockedList.remove(p);
+            }else if (state == 2) {
                 noProcessRunning = false;
-            }
-
-            if (state == 3) {
-                if (!blockedList.contains(p)) blockedList.add(p);
-                if (ready.contains(p)) ready.remove(p);
+            } else if (state == 3) {
+                if (!blockedList.contains(p))
+                    blockedList.add(p);
+                if (ready.contains(p))
+                    ready.remove(p);
                 atLeastOneBlocked = true;
-            }
-
-            if (state == 4) {
+            }else if (state == 4) {
                 if (!terminated.contains(p)) terminated.add(p);
             }
         }
+
         if (atLeastOneBlocked) {
-            totalIoBlockCycles += 1;
+            totalIoBlockCycles++;
         }
 
-    }
-
-    public ArrayList<Process_RR> getProcesses() {
-        return processes;
     }
 
     private void cycleStatus() {
@@ -195,7 +185,7 @@ public abstract class RR_Scheduler {
                     break;
                 case 2:
                     stateName = Utils.RUNNING;
-                    burst = String.valueOf(p.getBurstLeft());
+                    burst = String.valueOf(p.getCpuBurstRemaining());
                     break;
                 case 3:
                     stateName = Utils.BLOCKED;
@@ -237,13 +227,13 @@ public abstract class RR_Scheduler {
         System.out.println();
 
         for (i = 0; i < numProcesses; i++) {
-            System.out.println("Process_FCFS " + i + ": ");
+            System.out.println("Process #" + i + ": ");
             Process_RR p = processes.get(i);
             System.out.println(p.results());
             System.out.println();
 
             finishingTime = (p.getFinishTime() >= finishingTime) ? p.getFinishTime() : finishingTime;
-            avgWaitTime += p.getWaitTime();
+            avgWaitTime += p.getTotal_ReadyState_Time();
             avgTurnaroundTime += p.getTurnaroundTime();
             throughput = (100.0/finishingTime) * numProcesses;
             cpuUtilization += p.C;

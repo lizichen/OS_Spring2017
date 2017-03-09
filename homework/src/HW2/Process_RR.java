@@ -9,30 +9,15 @@ public class Process_RR {
     int id;
     int state; // 0 - unstarted, 1 - ready, 2 - running, 3 - blocked, 4 - terminated.
 
-    // Keep track of total IO Time (time in Blocked state)
+    int timeRemaining;              // time remaining for the process to terminate
+    int blockLeft;                  // time until the process back to ready
+    int burstTotal;                 // The total time of the CPU burst (used to calculate IO block time)
+    int cpuBurstRemaining;
+
     int total_ioTime;
-
-    // Keep track of total wait time (time in Ready state)
-    int waitTime;
-
-    // This is equal to C + total_ioTime + waitTime + A
-    int finishTime;
-
-    // This is equal to finishTime - A
-    int turnaroundTime;
-
-    // Variables to track the progress of a process
-    // How much longer before the process is complete
-    int timeLeft;
-
-    // If in block state, how long until process is ready
-    int blockLeft;
-
-    // The total time of the CPU burst (used to calculate IO block time)
-    int burstTotal;
-
-    // Tracks how much longer process has in cpuBurst
-    int burstLeft;
+    int total_ReadyState_Time;
+    int finishTime;                 // finishTime =  C + total_ioTime + total_ReadyState_Time + A
+    int turnaroundTime;             // finishTime - A
 
     int quantumMax;
 
@@ -41,81 +26,40 @@ public class Process_RR {
         this.B = B;
         this.C = C;
         this.M = M;
-        this.timeLeft = C;
+
+        this.timeRemaining = C;
         this.total_ioTime = 0;
-        this.waitTime = 0;
-        this.finishTime = 0;
+        this.total_ReadyState_Time = 0;
         this.blockLeft = 0;
-        this.turnaroundTime = 0;
+        this.finishTime = 0;
         this.burstTotal = 0;
-        this.burstLeft = 0;
-        // Set state to unstarted
-        this.state = 0;
+        this.cpuBurstRemaining = 0;
+
+        this.turnaroundTime = 0;
+
+        this.state = 0; // unstarted
         this.quantumMax = 1000;
     }
 
-
-    public void setTimeLeft(int timeLeft) {
-        this.timeLeft = timeLeft;
+    public void setTimeRemaining(int timeRemaining) {
+        this.timeRemaining = timeRemaining;
     }
+
     public void setQuantumMax(int quantum) {
         this.quantumMax = quantum;
     }
-
-    public int getQuantumMax() { return this.quantumMax; }
 
     public int getState() {
         return state;
     }
 
-    // Sets the process to ready
-    public void setReady() {
-        if (this.state == 4){
-            System.out.println("Wrong process state!");
-        }
-        this.state = 1;
-    }
-
-    // Sets the process to run
     public void setToRun(int cpuBurst)  {
-        if (this.blockLeft > 0){
-            System.out.println("Wrong process state!");
-        }
         this.state = 2;
 
-        // Only reset the burst if the process's burst has finished
-        // Reason: Could be interrupted by RR quantum burst
-        if(this.burstLeft <= 0) {
-            // Sets the burst time for the process
+        if(this.cpuBurstRemaining <= 0) {
             this.burstTotal = cpuBurst;
-            this.burstLeft = cpuBurst;
+            this.cpuBurstRemaining = cpuBurst;
         }
-    }
-
-    // Sets the process to run without a cpuBurst
-    public void setToRun()  {
-        if (this.blockLeft > 0){
-            System.out.println("Attempted to run a process that still has blockTime.");
-        }
-        this.state = 2;
-    }
-
-    public void setTerminate() {
-        if (this.timeLeft > 0){
-            System.out.println("Process_FCFS terminated before completion.");
-        }
-
-        // System.out.println("Set terminate called.");
-        this.state = 4;
-    }
-
-    public void setBlocked()  {
-        if (this.state != 2) {
-            System.out.println("Attempted to block non-running process.");
-        }
-        // System.out.println("Set blocked called.");
-        this.state = 3;
-        this.blockLeft = this.burstTotal * this.M;
     }
 
     public void tick()  {
@@ -123,7 +67,7 @@ public class Process_RR {
             case 0:
                 break;
             case 1:
-                handleReadyTick();
+                total_ReadyState_Time++;
                 break;
             case 2:
                 handleRunTick();
@@ -132,81 +76,39 @@ public class Process_RR {
                 handleBlockTick();
                 break;
             case 4:
-                handleTerminationTick();
                 break;
             default:
-                System.out.println("State unknown.");
+                System.out.println(Utils.UNKNOWN_STATE);
         }
-    }
-
-    private void handleReadyTick()  {
-        if (state!=1) {
-            System.out.println("handleReadyTick() invoked when not in ready state.");
-        }
-        waitTime++;
     }
 
     private void handleRunTick()  {
-        if (state!=2) {
-            System.out.println("handleRunTick() invoked when not in ready state.");
+        if (cpuBurstRemaining >= 0) {
+            timeRemaining--;
+            cpuBurstRemaining--;
         }
-
-        // System.out.println("Running: Burst Left: " + burstLeft + " | Time Left: " + timeLeft);
-        if (burstLeft >= 0) {
-            timeLeft--;
-            burstLeft--;
-        }
-
-        // Set state to terminate if process has finished all necessary CPU ticks
-        if (timeLeft <= 0) {
-            setTerminate();
-            return;
-        }
-        // Set state to blocked if process has finished its burst cycle
-        else if (burstLeft <= 0) {
-            setBlocked();
-            return;
-        }
-
-        // Set state to ready if quantum has been reached
-        else if (quantumMax > 0 && burstTotal != burstLeft && (burstTotal - burstLeft)%quantumMax==0) {
-            setReady();
-            return;
+        if (timeRemaining <= 0) {
+            this.state = 4;
+        } else if (cpuBurstRemaining <= 0) { //from running to blocked
+            this.state = 3;
+            this.blockLeft = this.burstTotal * this.M;
+        } else if (quantumMax > 0 && burstTotal != cpuBurstRemaining && (burstTotal - cpuBurstRemaining)%quantumMax==0) { // Set state to ready if quantum has been reached
+            this.state = 1;
         }
     }
 
     private void handleBlockTick() {
-        if (state!=3){
-            System.out.println("error state!");
-        }
-
         if (blockLeft >= 0) {
             total_ioTime++;
             blockLeft--;
         }
-
-        // Set state to ready if process has finished I/O
         if (blockLeft <= 0) {
-            // System.out.println("Block is complete, setting to ready.");
-            setReady();
-            return;
+            this.state = 1;
         }
     }
 
-    // Essentially does nothing
-    private void handleTerminationTick() {
-        return;
-    }
-
-    public String toString() {
-        String s = "";
-        s += "A: " + this.A + "\t| B: " + this.B + "\t| C: " + this.C + "\t| M: " + this.M;
-        return s;
-    }
-
     public String results() {
-        // System.out.format("Process_FCFS %d Finish time: this.c(%d) + total_ioTime(%d) + waitTime(%d) = %d\n", this.id, this.C, total_ioTime, waitTime, this.C + total_ioTime + waitTime);
-        finishTime = this.C + total_ioTime + waitTime + this.A;
+        finishTime = this.C + total_ioTime + total_ReadyState_Time + this.A;
         turnaroundTime = finishTime - A;
 
         StringBuilder sb = new StringBuilder();
@@ -219,7 +121,7 @@ public class Process_RR {
         sb.append("\n        ");
         sb.append("I/O time: " + total_ioTime);
         sb.append("\n        ");
-        sb.append("Waiting time: " + waitTime);
+        sb.append("Waiting time: " + total_ReadyState_Time);
         return sb.toString();
     }
 
@@ -228,11 +130,9 @@ public class Process_RR {
     public int getC() { return this.C; }
     public int getM() { return this.M; }
     public int getBlockLeft() { return this.blockLeft; }
-    public int getBurstLeft() { return this.burstLeft; }
-    public int getWaitTime() { return this.waitTime; }
+    public int getCpuBurstRemaining() { return this.cpuBurstRemaining; }
+    public int getTotal_ReadyState_Time() { return this.total_ReadyState_Time; }
     public int getFinishTime() { return this.finishTime; }
-    public int getTotal_ioTime() { return this.total_ioTime; }
+
     public int getTurnaroundTime() { return this.turnaroundTime; }
-    public void setId(int id) { this.id = id; }
-    public int getId() { return this.id; }
 }

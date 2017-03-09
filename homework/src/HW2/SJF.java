@@ -29,36 +29,37 @@ import java.util.*;
  */
 public class SJF extends RR_Scheduler{
 
-
+    public static final int INTEGER_CONSTANT = 10000;
     int numberOfProcesses = 0;
 
     public SJF(ArrayList<Process_RR> processes, int quantum, boolean verbose, int numberOfProcesses) throws FileNotFoundException {
         super(verbose, processes);
         this.quantum = quantum;
         this.numberOfProcesses = numberOfProcesses;
-        setQuantum(processes);
-    }
-
-    private static void setQuantum(ArrayList<Process_RR> list) {
-        for (Process_RR p : list) {
+        for (Process_RR p : processes) {
             p.setQuantumMax(1000);
         }
     }
 
     protected void updateReadyQueue() {
         Process_RR p = new Process_RR(0,0,0,0);
-        p.setTimeLeft(10000);
+
+        p.setTimeRemaining(INTEGER_CONSTANT);
+
         boolean shouldStop = true;
         for (Process_RR temp : ready) {
-            if (terminated.contains(temp)) continue;
-            if (temp.getBurstLeft() > 0) {
+
+            if (terminated.contains(temp))
+                continue;
+            if (temp.getCpuBurstRemaining() > 0) {
                 return;
             }
-            if (temp.timeLeft < p.timeLeft) {
+            if (temp.timeRemaining < p.timeRemaining) {
                 p = temp;
                 shouldStop = false;
             }
         }
+
         if (shouldStop)
             return;
 
@@ -71,25 +72,18 @@ public class SJF extends RR_Scheduler{
     public static void main(String[] args) {
 
         String input = "/Users/lizichen1/Google_Drive/OS_Sp17/homework/src/HW2/input_data/input-6.txt";
+        int quantum = 2;
+        boolean verbose = true;
 
         try {
             File inFile = new File(input);
             Scanner scanner = new Scanner(inFile);
             String data = scanner.useDelimiter("\\Z").next();
-
-
             scanner.close();
-
-            int quantum = 2;
-            boolean verbose = true;
-
             data = data.replaceAll("[()]", "");
-
-
             String[] tokens = data.split("\\s+");
 
             int numberOfProcesses = Integer.valueOf(tokens[0]);
-
             ArrayList<Process_RR> allprocess = new ArrayList<>();
 
             for(int i=1;i<tokens.length;i+=4){
