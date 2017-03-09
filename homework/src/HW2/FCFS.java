@@ -208,11 +208,19 @@ public class FCFS {
     }
 
     public static void main(String[] args) throws IOException {
-        // input format: FCFS [--verbose] input-1.txt
+        // input format: java FCFS [--verbose] input-1.txt
+        //java HW2/FCFS /Users/lizichen1/Google_Drive/OS_Sp17/homework/src/HW2/input_data/input-6.txt
         String filename = "/Users/lizichen1/Google_Drive/OS_Sp17/homework/src/HW2/input_data/input-6.txt";
 
-        String inputString = new String(Files.readAllBytes(Paths.get(filename)), StandardCharsets.UTF_8);
+        if(args.length == 2){
+            if(args[0].equals("--verbose")){
 
+            }
+        }else if(args.length == 1){ // java FCFS input-6.txt
+            filename = args[0];
+        }
+
+        String inputString = new String(Files.readAllBytes(Paths.get(filename)), StandardCharsets.UTF_8);
         FCFS newscheduler = new FCFS(inputString);
         System.out.println("The original input was: "+inputString);
         newscheduler.sortProcessesByArrivalTime();

@@ -4,10 +4,6 @@ package HW2;
  * Created by lizichen1 on 3/8/17.
  */
 public class Utils {
-
-    public static final String THE_ORIGINAL_INPUT_WAS = "The original input was: ";
-    public static final String THE_SORTED_INPUT_WAS = "The sorted input was:";
-
     //process states
     public static final String UNSTARTED = "unstarted";
     public static final String READY = "ready";
@@ -16,6 +12,11 @@ public class Utils {
     public static final String TERMINATED = "terminated";
     public static final String UNKNOWN_STATE = "?";
 
+    public static final String FIND_BURST_WHEN_CHOOSING_NEXT_PROCESS_TO_RUN = "Find burst when choosing next process to run: ";
+    public static final String NEWLINE_SPACE = "\n        ";
+    public static final String THE_ORIGINAL_INPUT_WAS = "The original input was: ";
+    public static final String THE_SORTED_INPUT_WAS = "The sorted input was:";
 
 
+    public static final String RANDOM_NUMBER_FILE = "/Users/lizichen1/Google_Drive/OS_Sp17/homework/input/random-numbers";
 }

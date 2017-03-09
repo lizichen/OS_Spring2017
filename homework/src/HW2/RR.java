@@ -21,7 +21,7 @@ public class RR extends RR_Scheduler{
     private static List<String> processList;
     private static int numberOfProcesses;
     private static ArrayList<Process_RR> allProcesses;
-    protected ArrayList<Process_RR> terminated;
+    //protected ArrayList<Process_RR> terminated;
 
     public RR(ArrayList<Process_RR> processes, int quantum, boolean verbose, int numberOfProcesses) throws FileNotFoundException {
         super(verbose, processes);
@@ -31,7 +31,7 @@ public class RR extends RR_Scheduler{
         this.allProcesses = processes;
 
         for (Process_RR p : processes) {
-            p.setQuantumMax(2);
+            p.quantumMax = 2;
         }
     }
 
@@ -60,9 +60,26 @@ public class RR extends RR_Scheduler{
 
     public static void main(String[] args){
 
-        String input = "/Users/lizichen1/Google_Drive/OS_Sp17/homework/src/HW2/input_data/input-6.txt";
+        String input = "/Users/lizichen1/Google_Drive/OS_Sp17/homework/src/HW2/input_data/input-7.txt";
         int quantum = 2;
         boolean verbose = true;
+
+        // java RR --verbose input-6.txt
+        // java RR input-6.txt
+        if(args.length == 2){
+            if(args[0].equals("--verbose")){
+                verbose = true;
+                input = args[1];
+            }
+            else{
+                verbose = false;
+                System.out.println("Please type\n java RR --verbose input.txt or java RR input.txt");
+                System.exit(-1);
+            }
+        }else if(args.length == 1){
+            input = args[0];
+            verbose = false;
+        }
 
         try {
 
@@ -86,8 +103,9 @@ public class RR extends RR_Scheduler{
 
             RR rr = new RR(allprocess, quantum, verbose, numberOfProcesses);
 
-            System.out.println(Utils.THE_ORIGINAL_INPUT_WAS + rr.getOriginalProcesses());
-            System.out.println(Utils.THE_SORTED_INPUT_WAS + rr.getSortedProcesses());
+            System.out.println(Utils.THE_ORIGINAL_INPUT_WAS + rr.originalProcesses);
+            System.out.println(Utils.THE_SORTED_INPUT_WAS + rr.sortedProcesses);
+
             System.out.println();
 
             while (rr.incomplete()) {

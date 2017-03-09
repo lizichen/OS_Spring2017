@@ -32,13 +32,30 @@ public class Uniprogrammed extends RR_Scheduler {
 
         if (!readyQueue.contains(p) &&
                 !blockedList.contains(p) &&
-                p.getState() != 2)
+                p.state != 2)
             readyQueue.addFirst(p);
     }
 
     public static void main(String[] args) {
-        String input = "/Users/lizichen1/Google_Drive/OS_Sp17/homework/src/HW2/input_data/input-6.txt";
+        String input = "/Users/lizichen1/Google_Drive/OS_Sp17/homework/src/HW2/input_data/input-1.txt";
         boolean verbose = true;
+
+        // java RR --verbose input-6.txt
+        // java RR input-6.txt
+        if(args.length == 2){
+            if(args[0].equals("--verbose")){
+                verbose = true;
+                input = args[1];
+            }
+            else{
+                verbose = false;
+                System.out.println("Please type\n java RR --verbose input.txt or java RR input.txt");
+                System.exit(-1);
+            }
+        }else if(args.length == 1){
+            input = args[0];
+            verbose = false;
+        }
 
         try {
             File inFile = new File(input);
@@ -59,11 +76,11 @@ public class Uniprogrammed extends RR_Scheduler {
 
             Uniprogrammed uni = new Uniprogrammed(allprocess, verbose, numberOfProcesses);
 
-            System.out.println(Utils.THE_ORIGINAL_INPUT_WAS + uni.getOriginalProcesses());
-            System.out.println(Utils.THE_SORTED_INPUT_WAS + uni.getSortedProcesses());
+            System.out.println(Utils.THE_ORIGINAL_INPUT_WAS + uni.originalProcesses);
+            System.out.println(Utils.THE_SORTED_INPUT_WAS + uni.sortedProcesses);
             System.out.println();
 
-            while (uni.incomplete()) {
+            while (uni.terminated.size() < uni.numProcesses) {
                 uni.cycle();
             }
             uni.printFinalSummary();

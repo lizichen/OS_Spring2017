@@ -1,21 +1,25 @@
 package HW2;
 
+
 /**
  * Created by lizichen1 on 3/6/17.
  */
 public class Process_RR {
 
+
     int A, B, C, M;
-    int id;
+
     int state; // 0 - unstarted, 1 - ready, 2 - running, 3 - blocked, 4 - terminated.
 
     int timeRemaining;              // time remaining for the process to terminate
     int blockLeft;                  // time until the process back to ready
+
     int burstTotal;                 // The total time of the CPU burst (used to calculate IO block time)
     int cpuBurstRemaining;
 
     int total_ioTime;
     int total_ReadyState_Time;
+
     int finishTime;                 // finishTime =  C + total_ioTime + total_ReadyState_Time + A
     int turnaroundTime;             // finishTime - A
 
@@ -41,27 +45,6 @@ public class Process_RR {
         this.quantumMax = 1000;
     }
 
-    public void setTimeRemaining(int timeRemaining) {
-        this.timeRemaining = timeRemaining;
-    }
-
-    public void setQuantumMax(int quantum) {
-        this.quantumMax = quantum;
-    }
-
-    public int getState() {
-        return state;
-    }
-
-    public void setToRun(int cpuBurst)  {
-        this.state = 2;
-
-        if(this.cpuBurstRemaining <= 0) {
-            this.burstTotal = cpuBurst;
-            this.cpuBurstRemaining = cpuBurst;
-        }
-    }
-
     public void tick()  {
         switch (state) {
             case 0:
@@ -79,6 +62,14 @@ public class Process_RR {
                 break;
             default:
                 System.out.println(Utils.UNKNOWN_STATE);
+        }
+    }
+
+    public void setToRun(int cpuBurst)  {
+        this.state = 2;
+        if(this.cpuBurstRemaining <= 0) {
+            this.burstTotal = cpuBurst;
+            this.cpuBurstRemaining = cpuBurst;
         }
     }
 
@@ -107,32 +98,20 @@ public class Process_RR {
         }
     }
 
-    public String results() {
+    public String summary() {
         finishTime = this.C + total_ioTime + total_ReadyState_Time + this.A;
         turnaroundTime = finishTime - A;
 
         StringBuilder sb = new StringBuilder();
+
         sb.append("        ");
         sb.append(String.format("(A, B, C, M) = (%d, %d, %d, %d)", this.A, this.B, this.C, this.M));
-        sb.append("\n        ");
-        sb.append("Finishing time: " + finishTime);
-        sb.append("\n        ");
-        sb.append("Turnaround time: " + turnaroundTime);
-        sb.append("\n        ");
-        sb.append("I/O time: " + total_ioTime);
-        sb.append("\n        ");
+        sb.append(Utils.NEWLINE_SPACE);
+        sb.append("Finishing time: " + finishTime + Utils.NEWLINE_SPACE);
+        sb.append("Turnaround time: " + turnaroundTime + Utils.NEWLINE_SPACE);
+        sb.append("I/O time: " + total_ioTime + Utils.NEWLINE_SPACE);
         sb.append("Waiting time: " + total_ReadyState_Time);
+
         return sb.toString();
     }
-
-    public int getA() { return this.A; }
-    public int getB() { return this.B; }
-    public int getC() { return this.C; }
-    public int getM() { return this.M; }
-    public int getBlockLeft() { return this.blockLeft; }
-    public int getCpuBurstRemaining() { return this.cpuBurstRemaining; }
-    public int getTotal_ReadyState_Time() { return this.total_ReadyState_Time; }
-    public int getFinishTime() { return this.finishTime; }
-
-    public int getTurnaroundTime() { return this.turnaroundTime; }
 }

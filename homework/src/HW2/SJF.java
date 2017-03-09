@@ -37,21 +37,21 @@ public class SJF extends RR_Scheduler{
         this.quantum = quantum;
         this.numberOfProcesses = numberOfProcesses;
         for (Process_RR p : processes) {
-            p.setQuantumMax(1000);
+            p.quantumMax = 1000;
         }
     }
 
     protected void updateReadyQueue() {
         Process_RR p = new Process_RR(0,0,0,0);
 
-        p.setTimeRemaining(INTEGER_CONSTANT);
+        p.timeRemaining = INTEGER_CONSTANT;
 
         boolean shouldStop = true;
         for (Process_RR temp : ready) {
 
             if (terminated.contains(temp))
                 continue;
-            if (temp.getCpuBurstRemaining() > 0) {
+            if (temp.cpuBurstRemaining > 0) {
                 return;
             }
             if (temp.timeRemaining < p.timeRemaining) {
@@ -63,7 +63,7 @@ public class SJF extends RR_Scheduler{
         if (shouldStop)
             return;
 
-        if (!readyQueue.contains(p) && !blockedList.contains(p) && p.getState() != 2)
+        if (!readyQueue.contains(p) && !blockedList.contains(p) && p.state != 2)
             readyQueue.addFirst(p);
 
         ListIterator<Process_RR> i = ready.listIterator();
@@ -71,9 +71,26 @@ public class SJF extends RR_Scheduler{
 
     public static void main(String[] args) {
 
-        String input = "/Users/lizichen1/Google_Drive/OS_Sp17/homework/src/HW2/input_data/input-6.txt";
+        String input = "/Users/lizichen1/Google_Drive/OS_Sp17/homework/src/HW2/input_data/input-7.txt";
         int quantum = 2;
         boolean verbose = true;
+
+        // java RR --verbose input-6.txt
+        // java RR input-6.txt
+        if(args.length == 2){
+            if(args[0].equals("--verbose")){
+                verbose = true;
+                input = args[1];
+            }
+            else{
+                verbose = false;
+                System.out.println("Please type\n java RR --verbose input.txt or java RR input.txt");
+                System.exit(-1);
+            }
+        }else if(args.length == 1){
+            input = args[0];
+            verbose = false;
+        }
 
         try {
             File inFile = new File(input);
@@ -94,11 +111,11 @@ public class SJF extends RR_Scheduler{
 
             SJF sjf = new SJF(allprocess, quantum, verbose, numberOfProcesses);
 
-            System.out.println(Utils.THE_ORIGINAL_INPUT_WAS + sjf.getOriginalProcesses());
-            System.out.println(Utils.THE_SORTED_INPUT_WAS + " " + sjf.getSortedProcesses());
+            System.out.println(Utils.THE_ORIGINAL_INPUT_WAS + sjf.originalProcesses);
+            System.out.println(Utils.THE_SORTED_INPUT_WAS + " " + sjf.sortedProcesses);
             System.out.println();
 
-            while (sjf.incomplete()) {
+            while (sjf.terminated.size() < sjf.numProcesses) {
                 sjf.cycle();
             }
             sjf.printFinalSummary();
