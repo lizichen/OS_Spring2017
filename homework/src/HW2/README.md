@@ -16,7 +16,8 @@
         -- Uniprogrammed.java
         
         -- Utils.java [Can change random-numbers directory here]
-       
+        -- ProcessComparator [To Sort the original processes]
+        
     -- input_data/
         -- random-numbers
         -- input-1.txt
@@ -24,8 +25,7 @@
         -- etc
 ```
 
-
-### Run the following command to compile:
+### Compile:
 - Under root directory, compile all java file:
     ```bash
     javac -sourcepath HW2/ HW2/*.java
@@ -40,7 +40,6 @@
     java HW2/RR --verbose /Users/lizichen1/Google_Drive/OS_Sp17/homework/src/HW2/input_data/input-6.txt  
     ```
     
-
 - FCFS  
 ```bash
     java HW2/FCFS /Users/lizichen1/Google_Drive/OS_Sp17/homework/src/HW2/input_data/input-6.txt    
