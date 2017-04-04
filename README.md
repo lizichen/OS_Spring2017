@@ -34,7 +34,7 @@ A **Process** is characterized by four non-negative integers A, B, C, and M.
 3. A process is a program in execution.
 4. Linker
 5. Scheduling Schemes
-6. Bander Algorithms
+6. Banker Algorithms
 7. Readers and Writers Problem
 8. Deadlock
 9. Multi-threaded and Multi-core chips.
@@ -44,10 +44,63 @@ A **Process** is characterized by four non-negative integers A, B, C, and M.
 12. Daemon Process - A program that is not invoked explicitly, but lies dormant waiting for some condition(s) to occur. Wikipedia: In Unix and other computer multitasking operating systems, a daemon is a computer program that runs in the background, rather than under the direct control of a user; they are usually instantiated as processes. Typically daemons have names that end with the letter "d"; for example, syslogd is the daemon which handles the system log.
 13. **kill()** (poorly named in my view) sends a signal to another process. For many types of signals, if the signal is not caught (via the signal() or sigaction() system call) the process is terminated. There is also an uncatchable signal.
 14. **exit() system call** is used for self termination and can indicate success or failure.
+15. Two Threads in One Process vs Two Processes
+    - Threads in the same process share memory; whereas separate processes do not.
+    - Switching execution from one thread to another thread in the same process is much faster than switching execution from one process to another processes.
+16. Producer and Consumer Pipeline
+17. Page Fault?
+18. Advantages and Disadvantages in implementing threads in user space.
+19. Preemption:
+    - A preemptive scheduler means the operating system can move a process from **Running** to **Ready** without the process requesting it.
+    - Without preemption, the system implements run until completion, or block (or yield, if there is threading).
+    - The preempt arc in the diagram is present for preemptive scheduling algorithms.
+    - Preemption needs a clock interrupt (or equivalent).
+    - Preemption is needed to guarantee fairness.
+    - Preemption is found in all modern general purpose operating systems.
+    - Preemption is expensive.
+20. Scheduling in Batch Systems
+    1. FCFS(First Come First Serve)
+    2. **Shortest Job First (SJF)**
+        + Non-preemptive algorithm
+        + Can **starve** a process that requires a **long burst**.
+    3. Uniprogrammed - monoprogrammed - Run to completion
+    4. Shortest Remaining Time Next (Preemptive shortest job first)
+        + Permit a process that enters the ready list to preempt the running process if the time for the new process is **less** than the remaining time for the running process.
+21. Scheduling in Interactive Systems
+    1. Round Robin (preemptive)
+        + When a process is put into the **Running State**, a timer is set to **q** milliseconds; a key parameter of the policy, called the **quantum**. If the timer goes off and the process is still *running*, the OS **preempts** the process.
+            * Preemption requires a **clock interrupt** so that **OS** can take control when the quantum expires.
+            * The currently running process is moved to the **Ready State**, where it is placed at the **rear** of the **Ready List**.
+            * The process at the front of the **Ready List** is popped from the list and run (i.e., moves to **Running State**).
+22. **Selfish RR** (SRR) - SRR is a preemptive policy in which **unblocked (i.e. ready and running) processes** are divided into two classes the **"Accepted processes"**, which are scheduled using RR and the **"others"**, which are not run until they become **Accepted**.
+    + A new process starts at priority 0.
+    + Accepted process have their priority increase at rate **a**≥0.
+    + A non-accepted process has its priority increases at rate **b**≥0.
+    + A **non-accepted process** becomes **accepted** when its priority reaches that of the accepted processes *(or when there are no accepted processes and it has the highest priority of the unaccepted processes)*.
+    + Hence, once a process is accepted, it remains accepted until it terminates.
+    + When the only accepted process terminates (or blocks, see below), all the process with the next highest priority become accepted.
+    + If **a = 0**, then it's regular RR.
+    + If **a ≥ b > 0**, it's FCFS.
+    + If **a > b =0**, you get **RR** in *batches*. 
+
+###2.3 Interprocess Communication (IPC) and Coordination/Synchronization
+###2.5 Classical IPC Problems
+1. A **race condition** occurs when
+    - Two processes A and B are each about to perform some (possibly different) action.
+    - The program does not determine which process goes first.
+    - The result if A goes first differs from the result if B goes first.
+2. Tanenbaum gives four requirements for a **critical section** implementation.
+    1. No two processes may be simultaneously inside their critical section.
+    2. **No assumption** may be made about the speeds or the number of concurrent threads/processes.
+    3. No process outside its critical section (i.e., executing 'ordinary' code) may block other processes.
+    4. No process should have to **wait forever** to enter its critical section.
 
 
+### To Look-up and Review:
+- Section 2.3 that having multiple threads concurrently accessing the same memory can cause subtle bugs is programs that look too simple to be wrong.
 
-One can organize an OS around the scheduler.  
+
+### One can organize an OS around the scheduler.  
 - Write a minimal kernel (a micro-kernel) consisting of the scheduler, interrupt handlers, and IPC (interprocess communication).
 - The rest of the OS consists of kernel processes (e.g. memory, filesystem) that act as servers for the user processes (which of course act as clients).
 - The system processes also act as clients of other system processes.

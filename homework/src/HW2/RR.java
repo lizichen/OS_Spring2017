@@ -1,7 +1,6 @@
 package HW2;
 
-import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.*;
 
 /**
@@ -21,9 +20,8 @@ public class RR extends RR_Scheduler{
     private static List<String> processList;
     private static int numberOfProcesses;
     private static ArrayList<Process_RR> allProcesses;
-    //protected ArrayList<Process_RR> terminated;
 
-    public RR(ArrayList<Process_RR> processes, int quantum, boolean verbose, int numberOfProcesses) throws FileNotFoundException {
+    public RR(ArrayList<Process_RR> processes, int quantum, boolean verbose, int numberOfProcesses) throws IOException {
         super(verbose, processes);
         this.quantum = quantum;
 
@@ -31,30 +29,26 @@ public class RR extends RR_Scheduler{
         this.allProcesses = processes;
 
         for (Process_RR p : processes) {
-            p.quantumMax = 2;
+            p.quantumLimit = 2;
         }
     }
 
     @Override
     protected void updateReadyQueue() {
 
-        ListIterator<Process_RR> i = ready.listIterator();
-
-        Process_RR p;
-
-        while (i.hasNext()) {
-            p = i.next();
-
-            if (!readyQueue.contains(p))
-                readyQueue.addFirst(p);
+        if(ready != null){
+            for(Process_RR currentProcess : ready){
+                if(!readyQueue.contains(currentProcess)) {
+                    readyQueue.addFirst(currentProcess);
+                }
+            }
         }
 
-        i = readyQueue.listIterator();
-
-        while (i.hasNext()) {
-            p = i.next();
-            if (ready.contains(p))
-                ready.remove(p);
+        for(Process_RR p : readyQueue){
+            if(ready.contains(p)){
+                int index = ready.indexOf(p);
+                ready.remove(index);
+            }
         }
     }
 
@@ -82,43 +76,24 @@ public class RR extends RR_Scheduler{
         }
 
         try {
-
-            File inFile = new File(input);
-            Scanner scanner = new Scanner(inFile);
-            String data = scanner.useDelimiter("\\Z").next();
-
-            scanner.close();
-            data = data.replaceAll("[()]", "");
-            String[] tokens = data.split("\\s+");
-
-            int numberOfProcesses = Integer.valueOf(tokens[0]);
-
-            ArrayList<Process_RR> allprocess = new ArrayList<>();
-
-            for(int i=1;i<tokens.length;i+=4){
-                System.out.printf("%d, %d, %d, %d \n", Integer.valueOf(tokens[i]), Integer.valueOf(tokens[i+1]), Integer.valueOf(tokens[i+2]), Integer.valueOf(tokens[i+3]));
-                Process_RR newProcess = new Process_RR(Integer.valueOf(tokens[i]), Integer.valueOf(tokens[i+1]), Integer.valueOf(tokens[i+2]), Integer.valueOf(tokens[i+3]));
-                allprocess.add(newProcess);
-            }
+            ArrayList<Process_RR> allprocess = Utils.fromInputFileToListOfProcesses(input);
+            int numberOfProcesses = Utils.getNumberOfProcess(input);
 
             RR rr = new RR(allprocess, quantum, verbose, numberOfProcesses);
 
-            System.out.println(Utils.THE_ORIGINAL_INPUT_WAS + rr.originalProcesses);
+            System.out.println(Utils.THE_ORIGINAL_INPUT_WAS + rr.originalProcessesDetailString);
             System.out.println(Utils.THE_SORTED_INPUT_WAS + rr.sortedProcesses);
 
             System.out.println();
 
-
-
-            while (rr.terminated.size() < rr.numProcesses) {
+            while (rr.terminatedProcess.size() < rr.numProcesses) {
                 rr.cycle();
             }
+            System.out.println();
             rr.printFinalSummary();
-
         }
         catch (Exception e) {
             System.out.println(e);
         }
-
     }
 }

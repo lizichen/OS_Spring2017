@@ -9,13 +9,13 @@ public class Process_RR {
 
     int A, B, C, M;
 
-    int state; // 0 - unstarted, 1 - ready, 2 - running, 3 - blocked, 4 - terminated.
+    int state; // 0 - unstarted, 1 - ready, 2 - running, 3 - blocked, 4 - terminatedProcess.
 
     int timeRemaining;              // time remaining for the process to terminate
     int blockLeft;                  // time until the process back to ready
 
     int burstTotal;                 // The total time of the CPU burst (used to calculate IO block time)
-    int cpuBurstRemaining;
+    int CPU_Burst_TimeRemaining;
 
     int total_ioTime;
     int total_ReadyState_Time;
@@ -23,7 +23,7 @@ public class Process_RR {
     int finishTime;                 // finishTime =  C + total_ioTime + total_ReadyState_Time + A
     int turnaroundTime;             // finishTime - A
 
-    int quantumMax;
+    int quantumLimit;
 
     public Process_RR(int A, int B, int C, int M) {
         this.A = A;
@@ -37,17 +37,18 @@ public class Process_RR {
         this.blockLeft = 0;
         this.finishTime = 0;
         this.burstTotal = 0;
-        this.cpuBurstRemaining = 0;
+        this.CPU_Burst_TimeRemaining = 0;
 
         this.turnaroundTime = 0;
 
         this.state = 0; // unstarted
-        this.quantumMax = 1000;
+        this.quantumLimit = 1000;
     }
 
     public void tick()  {
         switch (state) {
             case 0:
+            case 4:
                 break;
             case 1:
                 total_ReadyState_Time++;
@@ -58,33 +59,35 @@ public class Process_RR {
             case 3:
                 handleBlockTick();
                 break;
-            case 4:
-                break;
             default:
-                System.out.println(Utils.UNKNOWN_STATE);
+                System.out.println("WARNING: " + Utils.UNKNOWN_STATE);
+                System.exit(-1);
         }
     }
 
     public void setToRun(int cpuBurst)  {
-        this.state = 2;
-        if(this.cpuBurstRemaining <= 0) {
+        this.state = 2; // running state
+        if(this.CPU_Burst_TimeRemaining <= 0) {
             this.burstTotal = cpuBurst;
-            this.cpuBurstRemaining = cpuBurst;
+            this.CPU_Burst_TimeRemaining = cpuBurst;
         }
     }
 
     private void handleRunTick()  {
-        if (cpuBurstRemaining >= 0) {
+        if (CPU_Burst_TimeRemaining >= 0) {
             timeRemaining--;
-            cpuBurstRemaining--;
+            CPU_Burst_TimeRemaining--;
         }
+
         if (timeRemaining <= 0) {
             this.state = 4;
-        } else if (cpuBurstRemaining <= 0) { //from running to blocked
+        } else if (CPU_Burst_TimeRemaining <= 0) { //from running to blocked
             this.state = 3;
             this.blockLeft = this.burstTotal * this.M;
-        } else if (quantumMax > 0 && burstTotal != cpuBurstRemaining && (burstTotal - cpuBurstRemaining)%quantumMax==0) { // Set state to ready if quantum has been reached
-            this.state = 1;
+        } else if (quantumLimit > 0){
+            if (burstTotal != CPU_Burst_TimeRemaining && (burstTotal - CPU_Burst_TimeRemaining) % quantumLimit == 0){
+                this.state = 1;
+            }
         }
     }
 
@@ -93,6 +96,8 @@ public class Process_RR {
             total_ioTime++;
             blockLeft--;
         }
+
+        // change state
         if (blockLeft <= 0) {
             this.state = 1;
         }
@@ -102,16 +107,16 @@ public class Process_RR {
         finishTime = this.C + total_ioTime + total_ReadyState_Time + this.A;
         turnaroundTime = finishTime - A;
 
-        StringBuilder sb = new StringBuilder();
+        StringBuilder summarystring = new StringBuilder();
 
-        sb.append("        ");
-        sb.append(String.format("(A, B, C, M) = (%d, %d, %d, %d)", this.A, this.B, this.C, this.M));
-        sb.append(Utils.NEWLINE_SPACE);
-        sb.append("Finishing time: " + finishTime + Utils.NEWLINE_SPACE);
-        sb.append("Turnaround time: " + turnaroundTime + Utils.NEWLINE_SPACE);
-        sb.append("I/O time: " + total_ioTime + Utils.NEWLINE_SPACE);
-        sb.append("Waiting time: " + total_ReadyState_Time);
+        summarystring.append("        ");
+        summarystring.append(String.format("(A, B, C, M) = (%d, %d, %d, %d)", this.A, this.B, this.C, this.M));
+        summarystring.append(Utils.NEWLINE_SPACE);
+        summarystring.append("Finishing time: " + finishTime + Utils.NEWLINE_SPACE);
+        summarystring.append("Turnaround time: " + turnaroundTime + Utils.NEWLINE_SPACE);
+        summarystring.append("I/O time: " + total_ioTime + Utils.NEWLINE_SPACE);
+        summarystring.append("Waiting time: " + total_ReadyState_Time);
 
-        return sb.toString();
+        return summarystring.toString();
     }
 }

@@ -1,7 +1,6 @@
 package HW2;
 
-import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.*;
 
 /**
@@ -29,44 +28,40 @@ import java.util.*;
  */
 public class SJF extends RR_Scheduler{
 
-    public static final int INTEGER_CONSTANT = 10000;
     int numberOfProcesses = 0;
 
-    public SJF(ArrayList<Process_RR> processes, int quantum, boolean verbose, int numberOfProcesses) throws FileNotFoundException {
+    public SJF(ArrayList<Process_RR> processes, int quantum, boolean verbose, int numberOfProcesses) throws IOException {
         super(verbose, processes);
         this.quantum = quantum;
         this.numberOfProcesses = numberOfProcesses;
         for (Process_RR p : processes) {
-            p.quantumMax = 1000;
+            p.quantumLimit = 1000;
         }
     }
 
     protected void updateReadyQueue() {
         Process_RR p = new Process_RR(0,0,0,0);
+        p.timeRemaining = Utils.INTEGER_CONSTANT;
+        int pause = 1;
 
-        p.timeRemaining = INTEGER_CONSTANT;
-
-        boolean shouldStop = true;
-        for (Process_RR temp : ready) {
-
-            if (terminated.contains(temp))
-                continue;
-            if (temp.cpuBurstRemaining > 0) {
-                return;
-            }
-            if (temp.timeRemaining < p.timeRemaining) {
-                p = temp;
-                shouldStop = false;
+        Iterator iter = ready.iterator();
+        while(iter.hasNext()){
+            Process_RR o = (Process_RR) iter.next();
+            if(!terminatedProcess.contains(o)){
+                if (o.CPU_Burst_TimeRemaining > 0) {
+                    return;
+                }
+                if (o.timeRemaining < p.timeRemaining) {
+                    p = o;
+                    pause = 0;
+                }
             }
         }
 
-        if (shouldStop)
+        if (pause == 1)
             return;
 
-        if (!readyQueue.contains(p) && !blockedList.contains(p) && p.state != 2)
-            readyQueue.addFirst(p);
-
-        ListIterator<Process_RR> i = ready.listIterator();
+        addFirstReadyQueue(p);
     }
 
     public static void main(String[] args) {
@@ -93,31 +88,19 @@ public class SJF extends RR_Scheduler{
         }
 
         try {
-            File inFile = new File(input);
-            Scanner scanner = new Scanner(inFile);
-            String data = scanner.useDelimiter("\\Z").next();
-            scanner.close();
-            data = data.replaceAll("[()]", "");
-            String[] tokens = data.split("\\s+");
-
-            int numberOfProcesses = Integer.valueOf(tokens[0]);
-            ArrayList<Process_RR> allprocess = new ArrayList<>();
-
-            for(int i=1;i<tokens.length;i+=4){
-                System.out.printf("%d, %d, %d, %d \n", Integer.valueOf(tokens[i]), Integer.valueOf(tokens[i+1]), Integer.valueOf(tokens[i+2]), Integer.valueOf(tokens[i+3]));
-                Process_RR newProcess = new Process_RR(Integer.valueOf(tokens[i]), Integer.valueOf(tokens[i+1]), Integer.valueOf(tokens[i+2]), Integer.valueOf(tokens[i+3]));
-                allprocess.add(newProcess);
-            }
+            ArrayList<Process_RR> allprocess = Utils.fromInputFileToListOfProcesses(input);
+            int numberOfProcesses = Utils.getNumberOfProcess(input);
 
             SJF sjf = new SJF(allprocess, quantum, verbose, numberOfProcesses);
 
-            System.out.println(Utils.THE_ORIGINAL_INPUT_WAS + sjf.originalProcesses);
+            System.out.println(Utils.THE_ORIGINAL_INPUT_WAS + sjf.originalProcessesDetailString);
             System.out.println(Utils.THE_SORTED_INPUT_WAS + " " + sjf.sortedProcesses);
             System.out.println();
 
-            while (sjf.terminated.size() < sjf.numProcesses) {
+            while (sjf.terminatedProcess.size() < sjf.numProcesses) {
                 sjf.cycle();
             }
+            System.out.println();
             sjf.printFinalSummary();
 
         }

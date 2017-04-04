@@ -1,7 +1,6 @@
 package HW2;
 
-import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
@@ -14,242 +13,232 @@ public abstract class RR_Scheduler {
     public static final int LARGE_QUANTUM_INTEGER = 99999;
     public static final String RESET_BURST_TO_ZERO = "0";
 
-
     int quantum;
 
     private int totalIoBlockCycles;
 
-    public static final String BEFORE_CYCLE_4S = "Before Cycle \t%4s:";
+    public static final String BEFORE_CYCLE_4S = "Before Cycle \t%5s:";
 
     ArrayList<Process_RR> processes;
     int numProcesses;
-    Scanner random_integers;
-    int cycleNum;
+
+    int cycleIterationNumber;
     boolean verbose;
     boolean noProcessRunning;
 
-
-    String originalProcesses;
+    String originalProcessesDetailString;
     String sortedProcesses;
 
-    ArrayList<Process_RR> unstarted;
-    LinkedList<Process_RR> ready;
-    LinkedList<Process_RR> readyQueue;
-    LinkedList<Process_RR> blockedList;
-    ArrayList<Process_RR> terminated;
+    ArrayList<Process_RR> unstartedProcesses;
+    LinkedList<Process_RR> ready = new LinkedList<>();
+    LinkedList<Process_RR> readyQueue = new LinkedList<>();
+    LinkedList<Process_RR> blockedProcessList = new LinkedList<>();
+    ArrayList<Process_RR> terminatedProcess = new ArrayList<>();
 
+    RandomNumberProvider randomNumberProvider = new RandomNumberProvider();
 
+    public RR_Scheduler(boolean ver, ArrayList<Process_RR> processes) throws IOException {
 
-    public RR_Scheduler(boolean verbose, ArrayList<Process_RR> processes) throws FileNotFoundException {
+        this.verbose = ver;
 
-        this.verbose = verbose;
-
-        this.processes = new ArrayList();
-
-        File file = new File(Utils.RANDOM_NUMBER_FILE);
-        random_integers = new Scanner(file);
-
-        cycleNum = 0;
+        cycleIterationNumber = 0;
 
         this.numProcesses = processes.size();
-        this.originalProcesses = getProcessInfo(this.numProcesses, processes);
-        this.processes = sort(processes);
-        this.sortedProcesses = getProcessInfo(this.numProcesses, this.processes);
-        this.unstarted = processes;
-        noProcessRunning = true;
+        this.originalProcessesDetailString = Utils.getProcessInformation(this.numProcesses, processes);
+        this.processes = Utils.sort(processes);
+        this.sortedProcesses = Utils.getProcessInformation(this.numProcesses, this.processes);
 
-        this.ready = new LinkedList();
-        this.readyQueue = new LinkedList();
-        this.blockedList = new LinkedList();
-        this.terminated = new ArrayList();
+        this.unstartedProcesses = processes;
+        noProcessRunning = true;
 
         this.totalIoBlockCycles = 0;
         this.quantum = LARGE_QUANTUM_INTEGER;
     }
 
-    public static String getProcessInfo(int numProcesses, ArrayList<Process_RR> list) {
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(numProcesses + " ");
-        for (int i = 0; i < list.size(); i++) {
-            stringBuilder.append("(");
-            Process_RR p = list.get(i);
-            stringBuilder.append(p.A + " ");
-            stringBuilder.append(p.B + " ");
-            stringBuilder.append(p.C + " ");
-            stringBuilder.append(p.M);
-            stringBuilder.append(") ");
-        }
-        return stringBuilder.toString();
-    }
-
     // call for each cycle
     public void cycle() {
+
         if(verbose)
-            cycleStatus();
+            echoCycleStatus();
+
         for (Process_RR p : processes) {
             p.tick();
         }
+
         prepNextTick();
-        cycleNum++;
+        cycleIterationNumber++;
     }
 
     public void prepNextTick() {
         readyAllUnstarted();
         updateReadyQueue();
+
         if (noProcessRunning && !readyQueue.isEmpty()) {
+
             Process_RR p = readyQueue.removeLast();
-            if (cycleNum == 17) {
-                int random = randomOS(p.B);
-                p.setToRun(random);
-            }
-            else {
-                if (p.cpuBurstRemaining >0) {
-                    p.state = 2;
+
+            if(p!=null){
+                if (cycleIterationNumber == 17) {
+                    p.setToRun(this.randomNumberProvider.randomOS(p.B, verbose));
                 }
                 else {
-                    int random = randomOS(p.B);
-                    p.setToRun(random);
+                    if (p.CPU_Burst_TimeRemaining >0) {
+                        p.state = 2;
+                    }
+                    else {
+                        p.setToRun(this.randomNumberProvider.randomOS(p.B, verbose));
+                    }
                 }
             }
         }
     }
 
-
-
     private void readyAllUnstarted() {
         noProcessRunning = true;
-        boolean atLeastOneBlocked = false;
+        boolean hasBlockedProcess = false;
         for (Process_RR p : processes) {
 
             int state = p.state;
 
-            if (state == 0 && cycleNum >= p.A) {
+            if (state == 0 && cycleIterationNumber >= p.A) {
                 p.state = 1;
                 this.ready.add(p);
             }
-            if (state == 1) {
-                if (!ready.contains(p))
-                    ready.add(p);
-                if (blockedList.contains(p))
-                    blockedList.remove(p);
-            }else if (state == 2) {
-                noProcessRunning = false;
-            }else if (state == 3) {
-                if (!blockedList.contains(p))
-                    blockedList.add(p);
-                if (ready.contains(p))
-                    ready.remove(p);
-                atLeastOneBlocked = true;
-            }else if (state == 4) {
-                if (!terminated.contains(p)) terminated.add(p);
+
+            switch (state) {
+                case 0:
+                    break;
+                case 1:
+                    if (!ready.contains(p))
+                        ready.add(p);
+                    if (blockedProcessList.contains(p))
+                        blockedProcessList.remove(p);
+                    break;
+                case 2:
+                    noProcessRunning = false;
+                    break;
+                case 3:
+                    if (!blockedProcessList.contains(p))
+                        blockedProcessList.add(p);
+                    if (ready.contains(p))
+                        ready.remove(p);
+
+                    hasBlockedProcess = true;
+                    break;
+                case 4:
+                    if (!terminatedProcess.contains(p))
+                        terminatedProcess.add(p);
+                    break;
+                default:
+                    System.out.println("WARNING: " + Utils.UNKNOWN_STATE + " : "+state);
+                    System.exit(-1);
             }
         }
 
-        if (atLeastOneBlocked) {
+        if (hasBlockedProcess) {
             totalIoBlockCycles++;
         }
     }
 
-    private void cycleStatus() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(String.format(BEFORE_CYCLE_4S, cycleNum));
+    private void echoCycleStatus() {
+        StringBuilder cycleStatusString = new StringBuilder();
+        cycleStatusString.append(String.format(BEFORE_CYCLE_4S, cycleIterationNumber));
+
+        String stateNameString;
+        String burst;
+        int state;
+
         for (Process_RR p : processes) {
-            int state = p.state;
-            String stateName;
-            String burst;
+            state = p.state;
+
             if(state == 0){
-                stateName = Utils.UNSTARTED;
+                stateNameString = Utils.UNSTARTED;
                 burst = RESET_BURST_TO_ZERO;
-            }else if(state == 1){
-                stateName = Utils.READY;
+            } else if(state == 1){
+                stateNameString = Utils.READY;
                 burst = RESET_BURST_TO_ZERO;
             } else if (state == 2) {
-                stateName = Utils.RUNNING;
-                burst = String.valueOf(p.cpuBurstRemaining);
+                stateNameString = Utils.RUNNING;
+                burst = String.valueOf(p.CPU_Burst_TimeRemaining);
             } else if(state == 3){
-                stateName = Utils.BLOCKED;
+                stateNameString = Utils.BLOCKED;
                 burst = String.valueOf(p.blockLeft);
-            }else if(state == 4){
-                stateName = Utils.TERMINATED;
+            } else if(state == 4){
+                stateNameString = Utils.TERMINATED;
                 burst = RESET_BURST_TO_ZERO;
-            }else{
-                stateName = Utils.UNKNOWN_STATE;
+            } else{
+                stateNameString = Utils.UNKNOWN_STATE;
                 burst = RESET_BURST_TO_ZERO;
             }
-            sb.append(String.format("\t%12s%3s", stateName, burst));
+
+            cycleStatusString.append(String.format("\t%10s%5s", stateNameString, burst));
         }
-        System.out.println(sb.toString()+".");
+
+        System.out.println(cycleStatusString.toString()+".");
     }
-
-
 
     public void printFinalSummary() {
-        int finishingTime = 0;
+        double finish_time = 0;
 
-        double cpuUtilization = 0;
+        double totalCPUTime = 0;
+        double total_turnaround_time = 0;
+        double total_wait_time = 0;
+
         double throughput = 0;
-        double averageTurnAroundTime = 0;
-        double averageWaitTime = 0;
-        double ioUtilization = 0;
 
-        int i;
-
-        for (i = 0; i < numProcesses; i++) {
+        for (int i = 0; i < this.numProcesses; i++) {
             System.out.println("Process #" + i + ": ");
             Process_RR p = processes.get(i);
-            System.out.println(p.summary()+"\n");
+            System.out.println(p.summary());
 
+            System.out.println();
 
-            finishingTime = (p.finishTime >= finishingTime) ? p.finishTime : finishingTime;
-            averageWaitTime += p.total_ReadyState_Time;
-            averageTurnAroundTime += p.turnaroundTime;
-            throughput = (100.0/finishingTime) * numProcesses;
-            cpuUtilization += p.C;
+            if (p.finishTime >= finish_time)
+                finish_time = p.finishTime;
+
+            total_wait_time += p.total_ReadyState_Time;
+            total_turnaround_time += p.turnaroundTime;
+
+            throughput = (100.0 / finish_time) * this.numProcesses;
+            totalCPUTime += p.C;
         }
 
-        averageTurnAroundTime /= i;
-        averageWaitTime /= i;
+        double ave_turnaround_time =  total_turnaround_time / this.numProcesses;
+        double ave_wait_time = total_wait_time / this.numProcesses;
 
-        ioUtilization = ((double)totalIoBlockCycles/finishingTime);
-        cpuUtilization /= finishingTime;
+        double IO_Utilization_Rate = ((double)totalIoBlockCycles / finish_time);
+        double CPU_Utilization_Rate = totalCPUTime / finish_time;
 
+        System.out.println("---------------------------------------------------------------");
         System.out.println("Summary Data: ");
-        StringBuilder sb = new StringBuilder();
-        NumberFormat f = new DecimalFormat("#0.0000000");
+        StringBuilder summaryString = new StringBuilder();
+        NumberFormat f = new DecimalFormat("#0.0000");
 
-        sb.append("        ");
-        sb.append("Finishing Time: " + finishingTime+Utils.NEWLINE_SPACE);
-        sb.append("CPU Utilization: " + f.format(cpuUtilization)+Utils.NEWLINE_SPACE);
-        sb.append("I/O Utilization: " + f.format(ioUtilization)+Utils.NEWLINE_SPACE);
-        sb.append("Throughput: " + f.format(throughput) + " processes per hundred cycles"+Utils.NEWLINE_SPACE);
-        sb.append("Average turnaround time: " + f.format(averageTurnAroundTime)+Utils.NEWLINE_SPACE);
-        sb.append("Average waiting time: " + f.format(averageWaitTime));
-        System.out.println(sb.toString());
+        summaryString.append("        ");
+        summaryString.append("| Finishing Time: " + finish_time+Utils.NEWLINE_SPACE);
+        summaryString.append("| CPU Utilization: " + f.format(CPU_Utilization_Rate)+Utils.NEWLINE_SPACE);
+        summaryString.append("| I/O Utilization: " + f.format(IO_Utilization_Rate)+Utils.NEWLINE_SPACE);
+        summaryString.append("| Throughput: " + f.format(throughput) + " processes per hundred cycles"+Utils.NEWLINE_SPACE);
+        summaryString.append("| Average turnaround time: " + f.format(ave_turnaround_time)+Utils.NEWLINE_SPACE);
+        summaryString.append("| Average waiting time: " + f.format(ave_wait_time));
 
-        System.out.println("\nPlease Use Command: java {RR, SJF, FCFS, Uniprogrammed} --verbose input.txt ");
-    }
+        System.out.println(summaryString.toString());
+        System.out.println("---------------------------------------------------------------");
 
-    protected ArrayList<Process_RR> sort(ArrayList<Process_RR> processes){
-        Collections.sort(processes, new Comparator<Process_RR>() {
-            public int compare(Process_RR process_A, Process_RR process_B) {
-                if (process_A.A > process_B.A)
-                    return 1;
-                else if (process_A.A < process_B.A)
-                    return -1;
-                else
-                    return 0;
-            }
-        });
-        return processes;
-    }
-
-    public int randomOS(int B) {
-        String next = random_integers.nextLine();
-        if (verbose) {
-            System.out.println(Utils.FIND_BURST_WHEN_CHOOSING_NEXT_PROCESS_TO_RUN + next + " / " + B + "= " + (Integer.parseInt(next) % B));
-        }
-        return 1 + (Integer.parseInt(next) % B);
+        System.out.println("\nCommand: java {RR, SJF, FCFS, Uniprogrammed} [--verbose] input-data.txt ");
     }
 
     protected abstract void updateReadyQueue(); // Abstract method for specific scheduling algorithm to implement
+
+    public void addFirstReadyQueue(Process_RR p){
+        if(readyQueue.contains(p) == false){
+            if(blockedProcessList.contains(p) == false){
+                if(p.state != 2){
+                    readyQueue.addFirst(p);
+                }
+            }
+        }else{
+            return;
+        }
+    }
 }
