@@ -9,7 +9,7 @@ public class HW3 {
 
     public static void main(String[] args) {
 
-        String input = "/Users/lizichen1/Google_Drive/OS_Sp17/homework/src/HW3/input-data/input-12.txt";
+        String input = "/Users/lizichen1/Google_Drive/OS_Sp17/homework/src/HW3/input-data/input-09.txt";
         TaskFileReader t = new TaskFileReader(input);
         t.readInput();
 
@@ -24,7 +24,8 @@ public class HW3 {
         }
 
         //FIFO - start from 1 to N
-        FIFO.start(t.taskHashtable);
+        FIFO fifo = new FIFO(t.taskHashtable, numberOfTasks, typesOfReousces, numberOfResourceUnit);
+        fifo.start();
 
 
 
