@@ -3,6 +3,7 @@ package HW3;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Hashtable;
 
 /**
@@ -12,7 +13,7 @@ public class TaskFileReader {
 
     int numberOfTasks = 0;
     int typesOfResources = 0;
-    int numberOfResourceUnit = 0;
+    int[] numberOfResourceUnit;
     Hashtable<Integer, Task> taskHashtable = new Hashtable<Integer, Task>();
     String inputFile;
 
@@ -30,7 +31,10 @@ public class TaskFileReader {
                             String[] s = line.split("\\s+");
                             this.numberOfTasks =        Integer.valueOf(s[0]);
                             this.typesOfResources =     Integer.valueOf(s[1]);
-                            this.numberOfResourceUnit = Integer.valueOf(s[2]);
+                            this.numberOfResourceUnit = new int[Integer.valueOf(s[1])];
+                            for(int i=2 ; i < 2+Integer.valueOf(s[1]) ; i++){
+                                this.numberOfResourceUnit[i-2] = Integer.valueOf(s[i]);
+                            }
                         }else{
                             String[] s = line.split("\\s+");
                             int taskID = Integer.valueOf(s[1]);
