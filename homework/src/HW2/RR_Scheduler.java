@@ -5,26 +5,21 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
 
+import static HW2.ProcessState.*;
+
 /**
- * Created by lizichen1 on 3/8/17.
+ * Created by lizichen1 on 3/1/17.
  */
 public abstract class RR_Scheduler {
 
-    public static final int LARGE_QUANTUM_INTEGER = 99999;
-    public static final String RESET_BURST_TO_ZERO = "0";
-
-    int quantum;
-
-    private int totalIoBlockCycles;
-
-    public static final String BEFORE_CYCLE_4S = "Before Cycle \t%5s:";
-
+    int quantum = Utils.LARGE_QUANTUM_INTEGER;
+    private int totalIoBlockCycles = 0;
     ArrayList<Process_RR> processes;
     int numProcesses;
 
-    int cycleIterationNumber;
+    int cycleIterationNumber = 0;
     boolean verbose;
-    boolean noProcessRunning;
+    boolean noProcessRunning = true;
 
     String originalProcessesDetailString;
     String sortedProcesses;
@@ -41,18 +36,12 @@ public abstract class RR_Scheduler {
 
         this.verbose = ver;
 
-        cycleIterationNumber = 0;
-
         this.numProcesses = processes.size();
-        this.originalProcessesDetailString = Utils.getProcessInformation(this.numProcesses, processes);
+        this.originalProcessesDetailString = SchedulerHelper.getProcessInformation(this.numProcesses, processes);
         this.processes = Utils.sort(processes);
-        this.sortedProcesses = Utils.getProcessInformation(this.numProcesses, this.processes);
+        this.sortedProcesses = SchedulerHelper.getProcessInformation(this.numProcesses, this.processes);
 
         this.unstartedProcesses = processes;
-        noProcessRunning = true;
-
-        this.totalIoBlockCycles = 0;
-        this.quantum = LARGE_QUANTUM_INTEGER;
     }
 
     // call for each cycle
@@ -83,7 +72,7 @@ public abstract class RR_Scheduler {
                 }
                 else {
                     if (p.CPU_Burst_TimeRemaining >0) {
-                        p.state = 2;
+                        p.state = ProcessState.RUNNING;
                     }
                     else {
                         p.setToRun(this.randomNumberProvider.randomOS(p.B, verbose));
@@ -98,26 +87,26 @@ public abstract class RR_Scheduler {
         boolean hasBlockedProcess = false;
         for (Process_RR p : processes) {
 
-            int state = p.state;
+            ProcessState state = p.state;
 
-            if (state == 0 && cycleIterationNumber >= p.A) {
-                p.state = 1;
+            if (state == UNSTARTED && cycleIterationNumber >= p.A) {
+                p.state = ProcessState.READY;
                 this.ready.add(p);
             }
 
             switch (state) {
-                case 0:
+                case UNSTARTED:
                     break;
-                case 1:
+                case READY:
                     if (!ready.contains(p))
                         ready.add(p);
                     if (blockedProcessList.contains(p))
                         blockedProcessList.remove(p);
                     break;
-                case 2:
+                case RUNNING:
                     noProcessRunning = false;
                     break;
-                case 3:
+                case BLOCKED:
                     if (!blockedProcessList.contains(p))
                         blockedProcessList.add(p);
                     if (ready.contains(p))
@@ -125,7 +114,7 @@ public abstract class RR_Scheduler {
 
                     hasBlockedProcess = true;
                     break;
-                case 4:
+                case TERMINATED:
                     if (!terminatedProcess.contains(p))
                         terminatedProcess.add(p);
                     break;
@@ -142,33 +131,33 @@ public abstract class RR_Scheduler {
 
     private void echoCycleStatus() {
         StringBuilder cycleStatusString = new StringBuilder();
-        cycleStatusString.append(String.format(BEFORE_CYCLE_4S, cycleIterationNumber));
+        cycleStatusString.append(String.format(Utils.BEFORE_CYCLE_4S, cycleIterationNumber));
 
         String stateNameString;
         String burst;
-        int state;
+        ProcessState state;
 
         for (Process_RR p : processes) {
             state = p.state;
 
-            if(state == 0){
+            if(state == UNSTARTED){
                 stateNameString = Utils.UNSTARTED;
-                burst = RESET_BURST_TO_ZERO;
-            } else if(state == 1){
+                burst = Utils.RESET_BURST_TO_ZERO;
+            } else if(state == READY){
                 stateNameString = Utils.READY;
-                burst = RESET_BURST_TO_ZERO;
-            } else if (state == 2) {
+                burst = Utils.RESET_BURST_TO_ZERO;
+            } else if (state == RUNNING) {
                 stateNameString = Utils.RUNNING;
                 burst = String.valueOf(p.CPU_Burst_TimeRemaining);
-            } else if(state == 3){
+            } else if(state == BLOCKED){
                 stateNameString = Utils.BLOCKED;
                 burst = String.valueOf(p.blockLeft);
-            } else if(state == 4){
+            } else if(state == TERMINATED){
                 stateNameString = Utils.TERMINATED;
-                burst = RESET_BURST_TO_ZERO;
+                burst = Utils.RESET_BURST_TO_ZERO;
             } else{
                 stateNameString = Utils.UNKNOWN_STATE;
-                burst = RESET_BURST_TO_ZERO;
+                burst = Utils.RESET_BURST_TO_ZERO;
             }
 
             cycleStatusString.append(String.format("\t%10s%5s", stateNameString, burst));
@@ -233,7 +222,7 @@ public abstract class RR_Scheduler {
     public void addFirstReadyQueue(Process_RR p){
         if(readyQueue.contains(p) == false){
             if(blockedProcessList.contains(p) == false){
-                if(p.state != 2){
+                if(p.state != RUNNING){
                     readyQueue.addFirst(p);
                 }
             }

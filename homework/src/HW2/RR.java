@@ -14,6 +14,10 @@ import java.util.*;
  then each process gets 1/n of the CPU time in chunks of at most q time units at once.
  No process waits more than (n-1)q time units.
 
+
+ Created by lizichen1 on 3/2/17.
+
+
  */
 public class RR extends RR_Scheduler{
 

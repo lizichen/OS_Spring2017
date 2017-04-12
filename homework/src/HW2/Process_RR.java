@@ -1,62 +1,50 @@
 package HW2;
 
 
+import static HW2.ProcessState.*;
+import static HW2.Utils.LARGE_QUANTUM_INTEGER;
+
 /**
- * Created by lizichen1 on 3/6/17.
+ * Created by lizichen1 on 3/1/17.
  */
 public class Process_RR {
 
-
     int A, B, C, M;
-
-    int state; // 0 - unstarted, 1 - ready, 2 - running, 3 - blocked, 4 - terminatedProcess.
-
     int timeRemaining;              // time remaining for the process to terminate
-    int blockLeft;                  // time until the process back to ready
 
-    int burstTotal;                 // The total time of the CPU burst (used to calculate IO block time)
-    int CPU_Burst_TimeRemaining;
 
-    int total_ioTime;
-    int total_ReadyState_Time;
+    int total_ioTime = 0;
+    int total_ReadyState_Time = 0;
+    int blockLeft = 0;                  // time until the process back to ready
+    int finishTime = 0;                 // finishTime =  C + total_ioTime + total_ReadyState_Time + A
+    int burstTotal = 0;                 // The total time of the CPU burst (used to calculate IO block time)
+    int CPU_Burst_TimeRemaining = 0;
+    int turnaroundTime = 0;             // finishTime - A
+    ProcessState state = UNSTARTED;
+    int quantumLimit = LARGE_QUANTUM_INTEGER;
 
-    int finishTime;                 // finishTime =  C + total_ioTime + total_ReadyState_Time + A
-    int turnaroundTime;             // finishTime - A
-
-    int quantumLimit;
 
     public Process_RR(int A, int B, int C, int M) {
         this.A = A;
         this.B = B;
         this.C = C;
         this.M = M;
-
         this.timeRemaining = C;
-        this.total_ioTime = 0;
-        this.total_ReadyState_Time = 0;
-        this.blockLeft = 0;
-        this.finishTime = 0;
-        this.burstTotal = 0;
-        this.CPU_Burst_TimeRemaining = 0;
-
-        this.turnaroundTime = 0;
-
-        this.state = 0; // unstarted
-        this.quantumLimit = 1000;
     }
+
 
     public void tick()  {
         switch (state) {
-            case 0:
-            case 4:
+            case UNSTARTED:
+            case TERMINATED:
                 break;
-            case 1:
+            case READY:
                 total_ReadyState_Time++;
                 break;
-            case 2:
+            case RUNNING:
                 handleRunTick();
                 break;
-            case 3:
+            case BLOCKED:
                 handleBlockTick();
                 break;
             default:
@@ -65,13 +53,15 @@ public class Process_RR {
         }
     }
 
+
     public void setToRun(int cpuBurst)  {
-        this.state = 2; // running state
+        this.state = RUNNING; // running state
         if(this.CPU_Burst_TimeRemaining <= 0) {
             this.burstTotal = cpuBurst;
             this.CPU_Burst_TimeRemaining = cpuBurst;
         }
     }
+
 
     private void handleRunTick()  {
         if (CPU_Burst_TimeRemaining >= 0) {
@@ -80,13 +70,13 @@ public class Process_RR {
         }
 
         if (timeRemaining <= 0) {
-            this.state = 4;
+            this.state = TERMINATED;
         } else if (CPU_Burst_TimeRemaining <= 0) { //from running to blocked
-            this.state = 3;
+            this.state = BLOCKED;
             this.blockLeft = this.burstTotal * this.M;
         } else if (quantumLimit > 0){
             if (burstTotal != CPU_Burst_TimeRemaining && (burstTotal - CPU_Burst_TimeRemaining) % quantumLimit == 0){
-                this.state = 1;
+                this.state = READY;
             }
         }
     }
@@ -99,7 +89,7 @@ public class Process_RR {
 
         // change state
         if (blockLeft <= 0) {
-            this.state = 1;
+            this.state = READY;
         }
     }
 

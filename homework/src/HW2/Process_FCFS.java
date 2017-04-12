@@ -1,7 +1,7 @@
 package HW2;
 
 /**
- * Created by lizichen1 on 3/3/17.
+ * Created by lizichen1 on 2/27/17.
  */
 public class Process_FCFS implements Comparable<Process_FCFS>{
 

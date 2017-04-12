@@ -7,7 +7,7 @@ import java.util.Collections;
 import java.util.Scanner;
 
 /**
- * Created by lizichen1 on 3/8/17.
+ * Created by lizichen1 on 3/3/17.
  */
 public class Utils {
 
@@ -29,6 +29,9 @@ public class Utils {
     public static final String EMPTY_SPACE = " ";
 
     public static final int INTEGER_CONSTANT = 9999;
+    public static final int LARGE_QUANTUM_INTEGER = 99999;
+    public static final String RESET_BURST_TO_ZERO = "0";
+    public static final String BEFORE_CYCLE_4S = "Before Cycle \t%5s:";
 
     public static ArrayList<Process_RR> fromInputFileToListOfProcesses(String input) throws FileNotFoundException {
 
@@ -54,25 +57,16 @@ public class Utils {
         File inFile = new File(input);
         Scanner scanner = new Scanner(inFile);
         String data = scanner.useDelimiter("\\Z").next();
-        scanner.close();
+
         data = data.replaceAll("[()]", "");
         String[] tokens = data.split("\\s+");
 
+        scanner.close();
         int numberOfProcesses = Integer.valueOf(tokens[0]);
         return numberOfProcesses;
     }
 
-    public static String getProcessInformation(int numProcesses, ArrayList<Process_RR> list) {
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(numProcesses + EMPTY_SPACE);
-        for (int i = 0; i < list.size(); i++) {
-            Process_RR oneprocess = list.get(i);
-            stringBuilder.append("(");
-            stringBuilder.append(oneprocess.A + EMPTY_SPACE); stringBuilder.append(oneprocess.B + EMPTY_SPACE); stringBuilder.append(oneprocess.C + EMPTY_SPACE);
-            stringBuilder.append(oneprocess.M + ")" + EMPTY_SPACE);
-        }
-        return stringBuilder.toString();
-    }
+
 
     public static ArrayList<Process_RR> sort(ArrayList<Process_RR> processes){
         Collections.sort(processes, new ProcessComparator());
