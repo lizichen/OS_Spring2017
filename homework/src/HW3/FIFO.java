@@ -13,7 +13,6 @@ public class FIFO {
     private int numberOfTerminatedTasks = 0;
 
     public FIFO(Hashtable<Integer, Task> taskHashtable, int numberOfTasks, int typesOfResources, int[] numberOfResourceUnit) {
-
         taskList.add(new Task());//dummy task
 
         ArrayList l = new ArrayList(taskHashtable.keySet());
@@ -27,9 +26,6 @@ public class FIFO {
     }
 
     public void start(){
-
-
-
         ArrayList<Integer> visitTaskOrder = new ArrayList<>();
         for(int i=1;i<=numberOfTasks;i++){
             visitTaskOrder.add(i);

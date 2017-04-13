@@ -8,9 +8,15 @@ import java.util.Arrays;
  */
 public class HW3 {
 
+    public static String inputFilePath = "/Users/lizichen1/Google_Drive/OS_Sp17/homework/src/HW3/input-data/";
+    //switch
+    static boolean run_fifo   = false;
+    static boolean run_banker = true;
+
     public static void main(String[] args) {
 
-        String input = "/Users/lizichen1/Google_Drive/OS_Sp17/homework/src/HW3/input-data/input-13.txt";
+        String inputFileName = "input-13.txt";
+        String input = inputFilePath + inputFileName;
         TaskFileReader t = new TaskFileReader(input);
         t.readInput();
 
@@ -25,13 +31,20 @@ public class HW3 {
         }
 
         //FIFO - start from 1 to N
-        FIFO fifo = new FIFO(t.taskHashtable, numberOfTasks, typesOfReousces, numberOfResourceUnit);
-        fifo.start();
-        ArrayList<Task> resultsToPrint = fifo.getResultTaskList();
-        Utils.printResult(resultsToPrint);
+        if(run_fifo == true){
+            FIFO fifo = new FIFO(t.taskHashtable, numberOfTasks, typesOfReousces, numberOfResourceUnit);
+            fifo.start();
 
-        Utils.log("Completes!");
+            ArrayList<Task> fifo_resultsToPrint = fifo.getResultTaskList();
+            Utils.printResult(fifo_resultsToPrint, inputFileName, "FIFO");
+        }
 
-        //Banker
+        if(run_banker == true){
+            Banker banker = new Banker(t.taskHashtable, numberOfTasks, typesOfReousces, numberOfResourceUnit);
+            banker.start();
+
+            ArrayList<Task> banker_resultsToPrint = banker.getResultTaskList();
+            Utils.printResult(banker_resultsToPrint, inputFileName, "Banker");
+        }
     }
 }

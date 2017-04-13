@@ -9,13 +9,15 @@ import java.util.ArrayList;
 public class Utils {
 
     public final static boolean PRINT_LOG = false;
+    public final static boolean PRINT_INFO = false;
 
-    public static void printResult(ArrayList<Task> resultsToPrint) {
+    public static void printResult(ArrayList<Task> resultsToPrint, String inputFileName, String method) {
         int totalRunningTime = 0;
         int totalWaitingTime = 0;
 
-
-        System.out.println("=============Print Result=============");
+        System.out.println();
+        System.out.println("======================= "+method+" =====================");
+        System.out.println("=============Print Result "+ inputFileName+" =============");
         for(Task result_task:resultsToPrint){
             if (result_task.FIFO_Aborted == false) {
                 totalRunningTime += result_task.getCycleLength();
@@ -30,6 +32,12 @@ public class Utils {
 
     public static void log(String toprint){
         if(PRINT_LOG){
+            System.out.println(toprint);
+        }
+    }
+
+    public static void info(String toprint){
+        if(PRINT_INFO){
             System.out.println(toprint);
         }
     }
