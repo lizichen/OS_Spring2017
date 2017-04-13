@@ -8,7 +8,7 @@ import java.util.Arrays;
 /**
  * Created by lizichen1 on 4/11/17.
  */
-public class Task implements Serializable {
+public class Task {
 
     int id;
     int[] resouceTypeID;
@@ -73,7 +73,4 @@ public class Task implements Serializable {
     public int getCycleLength(){
         return (this.endCycle-this.startCycle)+(this.initOrderID-1);
     }
-
-
-
 }

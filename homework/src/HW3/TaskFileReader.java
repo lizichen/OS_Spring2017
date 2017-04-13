@@ -2,9 +2,9 @@ package HW3;
 
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Hashtable;
+
+import static HW3.Utils.INITIATE;
 
 /**
  * Created by lizichen1 on 4/11/17.
@@ -46,7 +46,7 @@ public class TaskFileReader {
                                 taskHashtable.put(taskID, newTask);
                             }else{
                                 Task aTask = taskHashtable.get(taskID);
-                                if(s[0].equals("initiate")){
+                                if(s[0].equals(INITIATE)){
                                     aTask.addInitCommand(s[0], Integer.valueOf(s[1]), Integer.valueOf(s[2]), Integer.valueOf(s[3]), this.numberOfResourceUnit);
                                 }else{
                                     aTask.addCommand(s[0], Integer.valueOf(s[1]), Integer.valueOf(s[2]), Integer.valueOf(s[3]));
@@ -61,8 +61,4 @@ public class TaskFileReader {
             e.printStackTrace();
         }
     }
-
-
-
-
 }

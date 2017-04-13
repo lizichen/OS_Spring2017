@@ -16,6 +16,12 @@ public class Utils {
     public final static boolean PRINT_LOG = false;
     public final static boolean PRINT_INFO = false;
 
+    public static final String INITIATE = "initiate";
+    public static final String REQUEST = "request";
+    public static final String RELEASE = "release";
+    public static final String COMPUTE = "compute";
+    public static final String TERMINATE = "terminate";
+
     public static void printResult(ArrayList<Task> fifoResult, ArrayList<Task> bankerResult, String inputfile) {
         int fifo_totalRunningTime = 0;
         int fifo_totalWaitingTime = 0;

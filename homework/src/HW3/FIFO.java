@@ -1,13 +1,16 @@
 package HW3;
 
-
 import java.util.*;
 
 import static HW3.Utils.log;
+import static HW3.Utils.RELEASE;
+import static HW3.Utils.REQUEST;
+import static HW3.Utils.COMPUTE;
+import static HW3.Utils.TERMINATE;
 
 public class FIFO {
+
     private int numberOfTasks;
-    private int typesOfResources;
     private int[] numberOfResourceUnit;
     private ArrayList<Task> taskList = new ArrayList<Task>();
     private ArrayList<Task> resultTaskList = new ArrayList<Task>();
@@ -24,7 +27,6 @@ public class FIFO {
 
         this.numberOfResourceUnit = numberOfResourceUnit;
         this.numberOfTasks = numberOfTasks;
-        this.typesOfResources = typesOfResources;
     }
 
     public void start(){
@@ -35,7 +37,6 @@ public class FIFO {
 
         log("====== Cycle (0 - 1) ======");
         this.cycleZeroWork();
-
         int cycle = 1;
 
         while(numberOfTerminatedTasks < this.numberOfTasks){
@@ -49,7 +50,7 @@ public class FIFO {
                 Task t = taskList.get(i);
                 if(t.id!=-1 && t.endCycle==0){//DO NOT CARE ABOUT the dummy task
                     Command c = t.getCurrentCommand();
-                    if(c.commandType.equals("request")){
+                    if(c.commandType.equals(REQUEST)){
                         if(this.hasEnoughResourceUnitLeftForRequestCommand(c)){
                             somethingHappenedInThisCycle = true;
                             log("Task #"+i+" is granted "+c.numberOfResouceUnit);
@@ -61,20 +62,20 @@ public class FIFO {
                             t.waitedCycle++;
                             failedRequests.add(i);
                         }
-                    }else if(c.commandType.equals("release")){
+                    }else if(c.commandType.equals(RELEASE)){
                         somethingHappenedInThisCycle = true;
                         log("Task #"+i+" releases "+c.numberOfResouceUnit);
 //                            this.numberOfResourceUnit[c.resourceType-1]+=c.numberOfResouceUnit;
                         releasedResourceUnit[c.resourceType-1]+=c.numberOfResouceUnit;
                         t.holdingResource[c.resourceType-1] -= c.numberOfResouceUnit;
                         t.currentRunningCommandIndex++;
-                    }else if(c.commandType.equals("compute")){
+                    }else if(c.commandType.equals(COMPUTE)){
                         somethingHappenedInThisCycle = true;
                         c.resourceType--;
                         if(c.resourceType==0){
                             t.currentRunningCommandIndex++;
                         }
-                    }else if(c.commandType.equals("terminate")){
+                    }else if(c.commandType.equals(TERMINATE)){
                         log("Task #"+i+" terminates");
                         somethingHappenedInThisCycle = true;
 //                        t.id = -1;
@@ -114,7 +115,7 @@ public class FIFO {
         }
     }
 
-    private void returnResourceFromFailedRequests(ArrayList<Integer> failedRequests, int cycle) {
+    public void returnResourceFromFailedRequests(ArrayList<Integer> failedRequests, int cycle) {
         int numberOfTasksToBeAborted = 0;
 
         Collections.sort(failedRequests); //FROM small index
@@ -153,7 +154,6 @@ public class FIFO {
         this.numberOfTerminatedTasks += numberOfTasksToBeAborted;
     }
 
-
     public boolean hasEnoughResourceUnitLeftForRequestCommand(Command c){
         return c.numberOfResouceUnit <= this.numberOfResourceUnit[c.resourceType-1];
     }
@@ -177,7 +177,6 @@ public class FIFO {
                 return o1.id < o2.id ? -1 : 1;
             }
         });
-
         return this.resultTaskList;
     }
 }

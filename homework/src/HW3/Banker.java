@@ -5,13 +5,17 @@ import java.util.*;
 import static HW3.Utils.log;
 import static HW3.Utils.info;
 
+import static HW3.Utils.RELEASE;
+import static HW3.Utils.REQUEST;
+import static HW3.Utils.COMPUTE;
+import static HW3.Utils.TERMINATE;
+
 /**
  * Created by lizichen1 on 4/11/17.
  */
 public class Banker {
 
     private int numberOfTasks;
-    private int typesOfResources;
     private int[] numberOfResourceUnit;
 
     private ArrayList<Task> taskList = new ArrayList<Task>();
@@ -27,7 +31,6 @@ public class Banker {
 
         this.numberOfResourceUnit = numberOfResourceUnit;
         this.numberOfTasks = numberOfTasks;
-        this.typesOfResources = typesOfResources;
 
         ArrayList l = new ArrayList(taskHashtable.keySet());
         for (int i = l.size()-1; i >= 0; i--) {
@@ -67,7 +70,7 @@ public class Banker {
                 if(t.id!=-1 && t.endCycle==0) {//DO NOT CARE ABOUT the dummy task
                     Command c = t.getCurrentCommand();
 
-                    if(c.commandType.equals("request")){
+                    if(c.commandType.equals(REQUEST)){
                         if(c.numberOfResouceUnit + t.holdingResource[c.resourceType-1] > t.initialclaim[c.resourceType-1]){
                             //abort this task!
                             t.FIFO_Aborted = true;
@@ -89,20 +92,19 @@ public class Banker {
                             t.waitedCycle++;
                             failedRequests.add(i);
                         }
-                    }else if(c.commandType.equals("release")){
+                    }else if(c.commandType.equals(RELEASE)){
                         somethingHappenedInThisCycle = true;
                         log("Task #"+i+" releases "+c.numberOfResouceUnit);
-//                            this.numberOfResourceUnit[c.resourceType-1]+=c.numberOfResouceUnit;
                         releasedResourceUnit[c.resourceType-1]+=c.numberOfResouceUnit;
                         t.holdingResource[c.resourceType-1] -= c.numberOfResouceUnit;
                         t.currentRunningCommandIndex++;
-                    }else if(c.commandType.equals("compute")){
+                    }else if(c.commandType.equals(COMPUTE)){
                         somethingHappenedInThisCycle = true;
                         c.resourceType--;
                         if(c.resourceType==0){
                             t.currentRunningCommandIndex++;
                         }
-                    }else if(c.commandType.equals("terminate")){
+                    }else if(c.commandType.equals(TERMINATE)){
                         log("Task #"+i+" terminates");
                         somethingHappenedInThisCycle = true;
                         t.endCycle = cycle;
@@ -120,7 +122,6 @@ public class Banker {
                 returnResourceFromFailedRequests(failedRequests, cycle);
             }
 
-
             //reorder the visiting sequence:
             for(Integer failedRequestID:failedRequests){
                 visitTaskOrder.remove(failedRequestID);
@@ -129,8 +130,6 @@ public class Banker {
                 failedRequests.add(r);
             }
             visitTaskOrder = failedRequests;
-
-
 
             info("Resource Left: "+ Arrays.toString(this.numberOfResourceUnit));
             info("\tTask 1 HoldingResource:"+Arrays.toString(this.taskList.get(1).holdingResource));
@@ -142,10 +141,7 @@ public class Banker {
 
     private boolean safeToProcessCommand(Command c, Task t) {
         // for all resource types, the number of free units is at least equal to the max additional need of the process
-
         boolean allsatisfied = false;
-
-
 
         for(int i=0;i<t.resouceTypeID.length;i++){
             int remainingAvailableResouceUnit = this.numberOfResourceUnit[i];
@@ -169,9 +165,7 @@ public class Banker {
         }
 
         return allsatisfied;
-
     }
-
 
     private void updateReleasedResourceUnits(int[] releasedResourceUnit) {
         for(int i=0;i<this.numberOfResourceUnit.length;i++){
@@ -179,8 +173,7 @@ public class Banker {
         }
     }
 
-
-    private void returnResourceFromFailedRequests(ArrayList<Integer> failedRequests, int cycle) {
+    public void returnResourceFromFailedRequests(ArrayList<Integer> failedRequests, int cycle) {
         int numberOfTasksToBeAborted = 0;
 
         Collections.sort(failedRequests); //FROM small index
@@ -218,7 +211,6 @@ public class Banker {
 
         this.numberOfTerminatedTasks += numberOfTasksToBeAborted;
     }
-
 
     public void grantResourceForRequestCommand(Command c){
         int leftResourceUnit = this.numberOfResourceUnit[c.resourceType-1];

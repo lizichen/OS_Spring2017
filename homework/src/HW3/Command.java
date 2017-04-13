@@ -10,7 +10,6 @@ public class Command {
     int resourceType; // number of compute cycles when commandType is 'compute'
     int numberOfResouceUnit;
 
-
     public Command(String s, int i1, int i2, int i3) {
         this.commandType = s;
         this.taskID = i1;
