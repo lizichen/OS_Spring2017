@@ -3,6 +3,8 @@ package HW3;
 
 import java.util.*;
 
+import static HW3.Utils.log;
+
 public class FIFO {
     private int numberOfTasks;
     private int typesOfResources;
@@ -177,11 +179,5 @@ public class FIFO {
         });
 
         return this.resultTaskList;
-    }
-
-    public static void log(String log){
-        if(true) {
-            System.out.println(log);
-        }
     }
 }

@@ -1,5 +1,6 @@
 package HW3;
 
+import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -7,7 +8,7 @@ import java.util.Arrays;
 /**
  * Created by lizichen1 on 4/11/17.
  */
-public class Task {
+public class Task implements Serializable {
 
     int id;
     int[] resouceTypeID;
