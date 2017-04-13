@@ -42,12 +42,16 @@ public class TaskFileReader {
                             if(taskHashtable.get(taskID)==null){
                                 //Create a Task
                                 Task newTask = new Task();
-                                newTask.addCommand(s[0], Integer.valueOf(s[1]), Integer.valueOf(s[2]), Integer.valueOf(s[3]));
+                                newTask.addInitCommand(s[0], Integer.valueOf(s[1]), Integer.valueOf(s[2]), Integer.valueOf(s[3]), this.numberOfResourceUnit);
                                 taskHashtable.put(taskID, newTask);
                             }else{
                                 Task aTask = taskHashtable.get(taskID);
-                                aTask.addCommand(s[0], Integer.valueOf(s[1]), Integer.valueOf(s[2]), Integer.valueOf(s[3]));
-                                taskHashtable.put(taskID, aTask);
+                                if(s[0].equals("initiate")){
+                                    aTask.addInitCommand(s[0], Integer.valueOf(s[1]), Integer.valueOf(s[2]), Integer.valueOf(s[3]), this.numberOfResourceUnit);
+                                }else{
+                                    aTask.addCommand(s[0], Integer.valueOf(s[1]), Integer.valueOf(s[2]), Integer.valueOf(s[3]));
+                                    taskHashtable.put(taskID, aTask);
+                                }
                             }
                         }
                     }
