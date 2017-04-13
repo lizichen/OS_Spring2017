@@ -10,7 +10,7 @@ public class HW3 {
 
     public static void main(String[] args) {
 
-        String input = "/Users/lizichen1/Google_Drive/OS_Sp17/homework/src/HW3/input-data/input-11.txt";
+        String input = "/Users/lizichen1/Google_Drive/OS_Sp17/homework/src/HW3/input-data/input-13.txt";
         TaskFileReader t = new TaskFileReader(input);
         t.readInput();
 

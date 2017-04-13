@@ -7,7 +7,7 @@ public class Command {
 
     String commandType; // initiate, request, release, compute, terminate
     int taskID;
-    int resourceType;
+    int resourceType; // number of compute cycles when commandType is 'compute'
     int numberOfResouceUnit;
 
 

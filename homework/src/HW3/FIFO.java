@@ -72,7 +72,10 @@ public class FIFO {
                         t.currentRunningCommandIndex++;
                     }else if(c.commandType.equals("compute")){
                         somethingHappenedInThisCycle = true;
-                        //TODO: Next Step!
+                        c.resourceType--;
+                        if(c.resourceType==0){
+                            t.currentRunningCommandIndex++;
+                        }
                     }else if(c.commandType.equals("terminate")){
                         log("Task #"+i+" terminates");
                         somethingHappenedInThisCycle = true;
@@ -148,14 +151,6 @@ public class FIFO {
                 }
             }
         }
-
-//        for(int i=0;i<failedRequests.size();i++){
-//            int failedRequestTaskID = failedRequests.get(i);
-//            Task t = taskList.get(failedRequestTaskID);
-//            if(t.FIFO_Aborted == false && t.endCycle == 0){
-//                t.waitedCycle++;
-//            }
-//        }
 
         this.numberOfTerminatedTasks += numberOfTasksToBeAborted;
     }
