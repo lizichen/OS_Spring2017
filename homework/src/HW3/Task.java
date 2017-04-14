@@ -27,6 +27,9 @@ public class Task {
     int endCycle = 0;
     int waitedCycle = 0;
 
+    /**
+     * Add the initial command only and initialize many parameters.
+     */
     public void addInitCommand(String s, Integer integer, Integer integer1, Integer integer2, int[] numberOfResourceUnit) {
         if(initialized == false){
             this.resouceTypeID = new int[numberOfResourceUnit.length];
@@ -43,6 +46,9 @@ public class Task {
         this.initOrderID++;
     }
 
+    /**
+     * Create an command and add to the commandlist of the task
+     */
     public void addCommand(String s, int i1, int i2, int i3) {
         Command command = new Command(s, i1, i2, i3);
         CommandList.add(command);
@@ -57,6 +63,9 @@ public class Task {
         return tasksb.toString();
     }
 
+    /**
+     * Return the current command that is going to be executed in this cycle.
+     */
     public Command getCurrentCommand(){
         return this.CommandList.get(currentRunningCommandIndex);
     }

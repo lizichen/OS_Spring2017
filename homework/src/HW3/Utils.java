@@ -22,6 +22,9 @@ public class Utils {
     public static final String COMPUTE = "compute";
     public static final String TERMINATE = "terminate";
 
+    /**
+     * After both processes are done, process fiforesult and bankerresult
+     */
     public static void printResult(ArrayList<Task> fifoResult, ArrayList<Task> bankerResult, String inputfile) {
         int fifo_totalRunningTime = 0;
         int fifo_totalWaitingTime = 0;
@@ -55,12 +58,18 @@ public class Utils {
         System.out.println("\n============================================");
     }
 
+    /**
+     * Simple switch for printing the log
+     */
     public static void log(String toprint){
         if(PRINT_LOG){
             System.out.println(toprint);
         }
     }
 
+    /**
+     * Simple switch for printing the log
+     */
     public static void info(String toprint){
         if(PRINT_INFO){
             System.out.println(toprint);

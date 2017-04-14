@@ -13,19 +13,13 @@ import static HW3.Utils.TERMINATE;
 /**
  * Created by lizichen1 on 4/11/17.
  */
-public class Banker {
-
-    private int numberOfTasks;
-    private int[] numberOfResourceUnit;
-
-    private ArrayList<Task> taskList = new ArrayList<Task>();
-    private ArrayList<Task> resultTaskList = new ArrayList<Task>();
-
-    private int numberOfTerminatedTasks = 0;
+public class Banker extends ParentClassForBankerAndFIFO {
 
     private int number_of_pre_aborted_task = 0;
 
     public Banker(Hashtable<Integer, Task> taskHashtable, int numberOfTasks, int typesOfReousces, int[] numberOfResourceUnit) {
+
+        super();
 
         taskList.add(new Task());//dummy task
 
@@ -48,14 +42,17 @@ public class Banker {
         }
     }
 
+    /**
+     * Stat the Banker's
+     */
     public void start() {
-        ArrayList<Integer> visitTaskOrder = new ArrayList<>();
+        ArrayList<Integer> visitTaskOrder = new ArrayList<>(); // This arraylist keeps the order of checking each command
         for(int i=1;i<=numberOfTasks;i++){
             visitTaskOrder.add(i);
         }
 
         log("====== Cycle (0 - 1) ======");
-        this.cycleZeroWork();
+        cycleZeroWork();
         int cycle = 1;
 
         while(numberOfTerminatedTasks < this.numberOfTasks-this.number_of_pre_aborted_task){
@@ -93,11 +90,7 @@ public class Banker {
                             failedRequests.add(i);
                         }
                     }else if(c.commandType.equals(RELEASE)){
-                        somethingHappenedInThisCycle = true;
-                        log("Task #"+i+" releases "+c.numberOfResouceUnit);
-                        releasedResourceUnit[c.resourceType-1]+=c.numberOfResouceUnit;
-                        t.holdingResource[c.resourceType-1] -= c.numberOfResouceUnit;
-                        t.currentRunningCommandIndex++;
+                        somethingHappenedInThisCycle = processReleaseCommand(releasedResourceUnit, i, t, c);
                     }else if(c.commandType.equals(COMPUTE)){
                         somethingHappenedInThisCycle = true;
                         c.resourceType--;
@@ -121,7 +114,6 @@ public class Banker {
             if(!failedRequests.isEmpty() && !somethingHappenedInThisCycle){
                 returnResourceFromFailedRequests(failedRequests, cycle);
             }
-
             //reorder the visiting sequence:
             for(Integer failedRequestID:failedRequests){
                 visitTaskOrder.remove(failedRequestID);
@@ -132,12 +124,11 @@ public class Banker {
             visitTaskOrder = failedRequests;
 
             info("Resource Left: "+ Arrays.toString(this.numberOfResourceUnit));
-            info("\tTask 1 HoldingResource:"+Arrays.toString(this.taskList.get(1).holdingResource));
-            info("\tTask 2 HoldingResource:"+Arrays.toString(this.taskList.get(2).holdingResource));
             cycle++;
         }
-
     }
+
+
 
     private boolean safeToProcessCommand(Command c, Task t) {
         // for all resource types, the number of free units is at least equal to the max additional need of the process
@@ -167,71 +158,5 @@ public class Banker {
         return allsatisfied;
     }
 
-    private void updateReleasedResourceUnits(int[] releasedResourceUnit) {
-        for(int i=0;i<this.numberOfResourceUnit.length;i++){
-            this.numberOfResourceUnit[i] += releasedResourceUnit[i];
-        }
-    }
 
-    public void returnResourceFromFailedRequests(ArrayList<Integer> failedRequests, int cycle) {
-        int numberOfTasksToBeAborted = 0;
-
-        Collections.sort(failedRequests); //FROM small index
-
-        for(int i=0;i<failedRequests.size();i++){
-
-            int failedRequestTaskID = failedRequests.get(i);
-            Task t = taskList.get(failedRequestTaskID);
-
-            t.FIFO_Aborted = true;
-            t.endCycle = cycle;
-            this.resultTaskList.add(t);
-
-            for(int index = 0;index<t.resouceTypeID.length;index++){
-                int return_resourceType = t.resouceTypeID[index];
-                this.numberOfResourceUnit[return_resourceType-1] += t.holdingResource[return_resourceType-1];
-            }
-
-            Task dummyTask = new Task();
-            dummyTask.id = -1;
-            taskList.set(failedRequestTaskID, dummyTask);
-            numberOfTasksToBeAborted++;
-
-            log("@@@ Task #"+failedRequestTaskID+" aborted and released "+Arrays.toString(t.holdingResource)+" @@@");
-
-            if(failedRequests.get(i+1)!=null){
-                int nextFailedRequestTaskID = failedRequests.get(i+1);
-                Task t1 = taskList.get(nextFailedRequestTaskID);
-                int t1_resourceType = t1.getCurrentCommand().resourceType;
-                if(this.numberOfResourceUnit[t1.resouceTypeID[t1_resourceType-1]-1] >= t1.getCurrentCommand().numberOfResouceUnit){
-                    break;// have enough resource!
-                }
-            }
-        }
-
-        this.numberOfTerminatedTasks += numberOfTasksToBeAborted;
-    }
-
-    public void grantResourceForRequestCommand(Command c){
-        int leftResourceUnit = this.numberOfResourceUnit[c.resourceType-1];
-        this.numberOfResourceUnit[c.resourceType-1] = leftResourceUnit - c.numberOfResouceUnit;
-    }
-
-    private void cycleZeroWork() {
-        log("initiating...");
-        for (Task t:taskList) {
-            t.currentRunningCommandIndex++;
-            t.startCycle = 0;
-        }
-    }
-
-    public ArrayList<Task> getResultTaskList(){
-        Collections.sort(this.resultTaskList, new Comparator<Task>(){
-            public int compare(Task o1, Task o2){
-                return o1.id < o2.id ? -1 : 1;
-            }
-        });
-
-        return this.resultTaskList;
-    }
 }

@@ -21,6 +21,9 @@ public class TaskFileReader {
         this.inputFile = inputFile;
     }
 
+    /**
+     * Read in the inputFile and return all the detailed Tasks and Commands
+     */
     public void readInput()  {
         try {
             try (BufferedReader br = new BufferedReader(new FileReader(this.inputFile))) {

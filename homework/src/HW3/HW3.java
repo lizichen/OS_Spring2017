@@ -10,16 +10,18 @@ import java.util.Hashtable;
  */
 public class HW3 {
 
-    public static String inputFilePath = "/Users/lizichen1/Google_Drive/OS_Sp17/homework/src/HW3/input-data/";
+//    public static String inputFilePath = "/Users/lizichen1/Google_Drive/OS_Sp17/homework/src/HW3/input-data/";
 
-//    public static void main(String[] args) {
+    /**
+     * Read in the input file and start FIFO then Banker's
+     */
     public static void run(String inputFileName){
-//        String inputFileName = "input-13.txt";
-        String input = inputFilePath + inputFileName;
-        TaskFileReader t = new TaskFileReader(input);
+//        String input = inputFilePath + inputFileName;
+
+        TaskFileReader t = new TaskFileReader(inputFileName);
         t.readInput();
 
-        TaskFileReader t2 = new TaskFileReader(input);
+        TaskFileReader t2 = new TaskFileReader(inputFileName);
         t2.readInput();
 
         int numberOfTasks = t.numberOfTasks;
@@ -32,8 +34,8 @@ public class HW3 {
 
         Utils.log("NumberOfTasks:"+numberOfTasks+" TypesOfResources:"+typesOfReousces+" NumberOfResourceUnits:"+ Arrays.toString(numberOfResourceUnit)+"\n");
 
-        FIFO fifo = new FIFO(t.taskHashtable, numberOfTasks, typesOfReousces, numberOfResourceUnit);
-        Banker banker = new Banker(t2.taskHashtable, numberOfTasks2, typesOfReousces2, numberOfResourceUnit2);
+        ParentClassForBankerAndFIFO fifo = new FIFO(t.taskHashtable, numberOfTasks, typesOfReousces, numberOfResourceUnit);
+        ParentClassForBankerAndFIFO banker = new Banker(t2.taskHashtable, numberOfTasks2, typesOfReousces2, numberOfResourceUnit2);
 
         fifo.start();
         banker.start();
@@ -44,19 +46,21 @@ public class HW3 {
         Utils.printResult(fifo_resultsToPrint, banker_resultsToPrint, inputFileName);
     }
 
+    /**
+     * This is where magic happens...
+     */
     public static void main(String[] args){
-        run("input-01.txt");
-        run("input-02.txt");
-        run("input-03.txt");
-        run("input-04.txt");
-        run("input-05.txt");
-        run("input-06.txt");
-        run("input-07.txt");
-        run("input-08.txt");
-        run("input-09.txt");
-        run("input-10.txt");
-        run("input-11.txt");
-        run("input-12.txt");
-        run("input-13.txt");
+
+//      run("input-01.txt");
+
+        String input;
+
+        if(args.length == 1){
+            input = args[0];
+            run(input);
+        }else{
+            System.out.println("Please type command like this: java HW3 input-01.txt");
+        }
+
     }
 }
