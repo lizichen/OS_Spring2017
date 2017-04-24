@@ -1,0 +1,200 @@
+<html>
+  <head>
+    <title>Homework Solutions for Operating Systems</title>
+    <!-- The following is std, but needs access to cs.nyu.edu -->
+    <link rel="stylesheet" type="text/css"
+	  href="http://cs.nyu.edu/~gottlieb/css/courses.css"/>
+    <!-- Firefox treats the next as relative; I use it when off the net -->
+    <link rel="stylesheet" type="text/css"
+	  href="http:/~gottlieb/css/courses.css"/>
+    <link rel="shortcut icon" href="//cs.nyu.edu/~gottlieb/favicon.ico"/>
+  </head>
+
+<body>
+
+
+
+<h1>Chapter 5: Input/Output</h1>
+
+<h2>5.1: Principles of I/O Hardware</h2>
+
+<p><strong>Problem:</strong> 5.15.
+  A local area network is used as follows.
+  The user issues a system call to write data packets to the network.
+  The operating system then copies the data to a kernel buffer.
+  Then it copies the data to the network controller board.
+  When all the bytes are safely inside the controller, they are sent
+  over the network at a rate of 10 megabits/sec.
+  The receiving network controller stores each bin a microsecond after
+  it is sent.
+  When the last bit arrives, the destination CPU is interrupted, and
+  the kernel copies the newly arrived packet to a kernel buffer to
+  inspect it.
+  Once it has figured out which user the packet is for, the kernel
+  copies the data to the user space.
+  If we assume that each interrupt and its associated processing takes
+  1 msec, that packets are 1024 bytes (ignore the headers), and that
+  copying a byte takes 1 microsecond, what is the maximum rate at
+  which one process can pump data to another?
+  Assume that the sender is blocked until the work is finished at the
+  receiving side and acknowledegment comes back.
+  For simplicity, assume that the time to get the acknowledgement back
+  is so small it can be ignored.</p>
+<p><strong>Solution:</strong>
+<p>A packet must be copied four times during this process (the sending
+  kernel copies it twice and the receiving kernel does as well; to see
+  this simply note that the word "copies" appears 4 times in the
+  problem description), which takes 4.1 msec (1024 bytes/packet *
+  1us/byte = 1.024msec/packet; 4 copies is 4.096msec).
+  There are also two interrupts (see below), which account for 2 msec.
+  Finally, the transmission time is approximately (see below for the
+  correct value) 8*1024/10^7 sec = 0.8196 msec, for total of 6.92 msec
+  per 1024 bytes.
+<p>The maximum data rate is thus 147,977 bytes/sec = 1,183,815
+  bits/sec, or about 12 percent of the nominal 10 megabit/sec network
+  capacity.
+  If we include protocol overhead, the figures get even worse.
+<p>The transmission time actually depends on both the latency (which
+  the problem states is 10^-6sec) and the bandwidth of 10^7 bits/sec.
+  The first bit arrives after 10^-6 seconds and then each of the
+  following bits arrives 10^-7 seconds later.
+  Hence the transmission portion of the time is
+  10^-6+(1024*8-1)/(10^7) seconds.
+  This slightly different transmission time from that used above does
+  not affect the data rate to the few digits of precision that we use.
+<p>What are the two interrupts?
+  The first is when the sending kernel receives an interrupt from the
+  controller saying that it has sent the data (so that the kernel
+  knows it can start filling the controller's buffer).
+  The second is when the receiving controller has received the data.
+  This tells the receiving kernel that it can now start copying the
+  data from the receiving controller's buffer into the kernel's
+  buffer.
+
+<h2>5.2: Principles of I/O Software</h2>
+
+<p><strong>Problem:</strong>
+  What is device independence?
+<p><strong>Solution:</strong>
+<p>Device independence means that files and devices are accessed the
+  same way, independent of their physical nature.
+  Systems that have one set of calls for writing on a file, but a
+  different set of calls for writing on the console (terminal) do not
+  exhibit device independence.<hr/>
+
+<h2>5.3 I/O Software Layers</h2>
+
+<p><strong>Problem:</strong> 5.14.
+  In which of the four I/O software layers is each of the following
+  done.</p>
+<p><strong>Solution:</strong>
+  <ol type="a">
+    <li>Device driver.
+    <li>Device driver.
+    <li>Device-independent software.
+    <li>User-level software.
+  </ol>
+</p><hr/>
+
+<p><strong>Problem:</strong> 5.16.
+  Why are output files for the printer normally spooled on disk before
+  being printed?</p>
+<p><strong>Solution:</strong>
+  If the printer were assigned as soon as the output appeared, a
+  process could tie up the printer by printing a few characters and
+  then going to sleep for a week.</p>
+
+<h2>5.4: Disks</h2>
+
+<p><strong>Problem:</strong>
+  Consider a disk with an average seek time of 5ms, an average
+  rotational latency of 5ms, and a transfer rate of 40MB/sec.
+  <ol>
+    <li>If the block size is 1KB, how long would it take to read a
+      block?
+    <li>If the block size is 100KB, how long would it take to read a
+      block?
+    <li>If the goal is to read 1K, a 1KB block size is better as the
+      remaining 99KB are wasted.
+      If the goal is to read 100KB, the 100KB block size is better
+      since the 1KB block size needs 100 seeks and 100 rotational
+      latencies.
+      What is the minimum size request for which a disk with a 100KB
+      block size would complete faster than one with a 1KB block size?
+  </ol>
+<p><strong>Solution:</strong>
+  <ol>
+    <li>5ms + 5ms + 1KB / (40MB/sec) = 10ms + (1/40)ms =
+      10.025ms.
+    <li>5ms + 5ms + 100KB / (40MB/sec) = 10ms + 2.5ms
+      12.5ms.
+    <li>1KB + 1B.
+      That is, any request larger than one small block would be faster
+      with a large block since two small I/Os take longer than one
+      large I/O.
+  </ol>
+</p>
+
+<p><strong>Problem:</strong> 5.31.
+  Disk requests come into to the disk driver for sylinders 10, 22,
+  20, 2, 40, 6, and 38, in that order.
+  A seek takes 6 ms per cylinder.
+  The disk head is initially at cylinder 20. 
+  How much seek time is needed for.</p>
+<ol type="a">
+  <li>First come, first served.</li>
+  <li>Closest cylinder next.</li>
+  <li>Elevator algorithm (initially moving upward).</li>
+</ol>
+<p><strong>Solution:</strong>
+  <ol type="a">
+    <tt>
+      <li>10+12+2+18+38+34+32 = 146 cylinders = 876 msec
+      <li>0+2+12+4+4+36+2 &nbsp; &nbsp; = &nbsp;60 cylinders  = 360 msec
+      <li>0+2+16+2+30+4+4 &nbsp; &nbsp; = &nbsp;58 cylinders  = 348 msec
+    </tt>
+  </ol><hr/>
+
+<p><strong>Problem:</strong> 
+  A salesman claimed that their version of Unix was very fast.
+  For example, their disk driver used the elevator algorithm to
+  reorder requests for different cylinders.
+  In addition, the driver queued multiple requests for the same
+  cylinder in sector order.
+  Some hacker bought a version of the OS and tested it with a program
+  that read 10,000 blocks randomly chosen across the disk.
+  The new Unix was not faster that an old one that did FCFS for all
+  requests.
+  What happened?
+<p><strong>Solution:</strong>
+  A UNIX program that reads 10,000 blocks, issues the requests one at
+  a time, blocking after each requested is issued until after it is
+  completed.
+  Thus the disk driver sees only one request at a time, and hence has
+  no opportunity to do anything but process them in the order of
+  arrival.
+  A better test would have been to start up many processes at the same
+  time to see if the fancy elevator algorithm yielded any
+  improvement.</p>
+
+<h2>5.5: Clocks</h2>
+
+<p><strong>Problem:</strong> 5.37.
+  The clock interrupt handler on a certain computer requires 2msec
+  (including process switching overhead) per clock tick.
+  The clock runs at 60 Hz.
+  What fraction of the CPU is devoted to the clock.
+<p><strong>Solution:</strong>
+  2 ms 60 times a second is 120 ms/sec, or 12% of the CPU time.</p>
+
+  
+</body>
+</html>
+
+<!--
+Local Variables:
+tab-width: 4
+indent-tabs-mode: nil
+abbrev-mode: t
+End:
+-->
