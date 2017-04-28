@@ -29,6 +29,9 @@ Implements resource allocation using optimistic resource manager and banker's al
 ### 4. HW4 - Demand Paging  
 Simulate demand paging and see how the number of page faults depends on page size, program size, replacement algorithm, and job mix.
 
+
+![meme](https://github.com/lizichen/OS_Spring2017/blob/master/meme.jpg "meme")
+
 ### Mid-term Review:
 1. Lecture 4: Numerical Scheduling Problems (the problem did in class just before section 2.4.4 (which is grayed out))
 2. OS Levels:
