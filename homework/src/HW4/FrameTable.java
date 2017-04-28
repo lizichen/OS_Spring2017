@@ -46,10 +46,7 @@ public class FrameTable {
             }
         }
 
-        // if there is no empty frame, then use the replacementAlgo to evict a frameRow
         if(replacementAlgo.equals("random")){
-            //Process the evicted process page: add eviction time by one, and add its total resident time
-            //find the evicted by generating random number
             int frame_id_ToBeEvicted = this.randomNumberProvider.nextRandomInt() % this.numberOfFrames;
             FrameRow frameToBeEvicted = this.frameRows[frame_id_ToBeEvicted];
 
@@ -90,8 +87,9 @@ public class FrameTable {
             this.frameRows[frame_id_ToBeEvicted].currentTime = currentTime;
             this.frameRows[frame_id_ToBeEvicted].leastRecentTimeStamp = currentTime;
 
-            System.out.println("\tEvicting Page #"+this.frameRows[frame_id_ToBeEvicted].pageNumber+" of process #"+this.frameRows[frame_id_ToBeEvicted].processId+" from Frame #"+frame_id_ToBeEvicted);
+            Utils.log("\tEvicting Page #"+this.frameRows[frame_id_ToBeEvicted].pageNumber+" of process #"+this.frameRows[frame_id_ToBeEvicted].processId+" from Frame #"+frame_id_ToBeEvicted);
             return frame_id_ToBeEvicted;
+
         }else if(replacementAlgo.equals("lifo")){
             int frame_id_ToBeEvicted = previouslyTouchedFrame;
             FrameRow frameToBeEvicted = this.frameRows[frame_id_ToBeEvicted];
@@ -106,9 +104,8 @@ public class FrameTable {
             this.frameRows[frame_id_ToBeEvicted].pageNumber = currentPage;
             this.frameRows[frame_id_ToBeEvicted].currentTime = currentTime;
 
-            System.out.println("\tEvicting Page #"+this.frameRows[frame_id_ToBeEvicted].pageNumber+" of process #"+this.frameRows[frame_id_ToBeEvicted].processId+" from Frame #"+frame_id_ToBeEvicted);
+            Utils.log("\tEvicting Page #"+this.frameRows[frame_id_ToBeEvicted].pageNumber+" of process #"+this.frameRows[frame_id_ToBeEvicted].processId+" from Frame #"+frame_id_ToBeEvicted);
             return frame_id_ToBeEvicted;
-
         }
 
         return -1;

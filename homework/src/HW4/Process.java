@@ -35,7 +35,6 @@ public class Process {
         this.numberOfPageFaultOccurance++;
     }
 
-
     public void incrementEvictOccuranceByOne() {
         this.evictOccurance++;
     }
@@ -46,16 +45,19 @@ public class Process {
 
     public void getNextWord_multiProcess(double A, double B, double C, RandomNumberProvider randomNumberProvider) {
         int randomNum = randomNumberProvider.nextRandomInt();
+
         double quotient = randomNum / (Integer.MAX_VALUE + 1d);
+
+        int currentProcessSize = this.processSize;
+
         if (quotient < A) {
-            currentWord = (currentWord + 1) % processSize;
+            this.currentWord = (this.currentWord + 1) % currentProcessSize;
         } else if (quotient < A + B) {
-            currentWord = (currentWord - 5 + processSize) % processSize;
+            this.currentWord = (this.currentWord - 5 + currentProcessSize) % currentProcessSize;
         } else if (quotient < A + B + C) {
-            currentWord = (currentWord + 4) % processSize;
+            this.currentWord = (this.currentWord + 4) % currentProcessSize;
         } else {
-            int randomRef = randomNumberProvider.nextRandomInt() % processSize;
-            currentWord = randomRef;
+            this.currentWord = randomNumberProvider.nextRandomInt() % currentProcessSize;
         }
     }
 }

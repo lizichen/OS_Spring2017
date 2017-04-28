@@ -23,7 +23,7 @@ public class RandomNumberProvider {
 
     public int nextRandomInt(){
         int rand = Integer.valueOf(random_integers.nextLine());
-        System.out.println("\trandom number:"+rand);
+        Utils.log("\trandom number:"+rand);
         return rand;
     }
 }

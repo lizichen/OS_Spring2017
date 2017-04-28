@@ -1,10 +1,21 @@
 package HW4;
 
-/**
- * Created by lizichen1 on 4/27/17.
- */
 public class Paging {
     public static void main(String[] args) {
+
+        int machineSize = Integer.valueOf(args[0]);
+        int pageSize = Integer.valueOf(args[1]);
+        int processSize = Integer.valueOf(args[2]); // 0..S-1
+        int jobMix = Integer.valueOf(args[3]);
+        int numberOfReferences = Integer.valueOf(args[4]); // iteration for each process
+        String replacementAlgo = args[5];
+
+        Simulator newSimulator = new Simulator(machineSize, pageSize, processSize, jobMix, numberOfReferences, replacementAlgo);
+        newSimulator.start();
+        newSimulator.printInfo();
+
+    }
+}
 
 //        args = new String[]{"10", "10", "20", "1", "10", "lru"}; //1
 //        args = new String[]{"10", "10", "10", "1", "100", "lru"}; //2
@@ -22,17 +33,3 @@ public class Paging {
 //        args = new String[]{"800", "40", "400", "4", "5000", "lru"}; //14
 //        args = new String[]{"10", "5", "30", "4", "3", "random"}; //15
 //        args = new String[]{"1000", "40", "400", "4", "5000", "lifo"}; //16
-
-        int machineSize = Integer.valueOf(args[0]);
-        int pageSize = Integer.valueOf(args[1]);
-        int processSize = Integer.valueOf(args[2]); // 0..S-1
-        int jobMix = Integer.valueOf(args[3]);
-        int numberOfReferences = Integer.valueOf(args[4]); // iteration for each process
-        String replacementAlgo = args[5];
-
-        Simulator newSimulator = new Simulator(machineSize, pageSize, processSize, jobMix, numberOfReferences, replacementAlgo);
-        newSimulator.start();
-        newSimulator.printInfo();
-
-    }
-}
