@@ -66,7 +66,7 @@ public class SJF extends RR_Scheduler{
 
     public static void main(String[] args) {
 
-        String input = "/Users/lizichen1/Google_Drive/OS_Sp17/homework/src/HW2/input_data/input-6.txt";
+        String input = "/Users/lizichen1/Google_Drive/OS_Sp17/homework/src/HW2/input_data/input-7.txt";
         int quantum = 2;
         boolean verbose = true;
 

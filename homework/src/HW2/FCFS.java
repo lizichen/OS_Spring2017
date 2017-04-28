@@ -210,7 +210,7 @@ public class FCFS {
     public static void main(String[] args) throws IOException {
         // input format: java FCFS [--verbose] input-1.txt
         //java HW2/FCFS /Users/lizichen1/Google_Drive/OS_Sp17/homework/src/HW2/input_data/input-6.txt
-        String filename = "/Users/lizichen1/Google_Drive/OS_Sp17/homework/src/HW2/input_data/input-6.txt";
+        String filename = "/Users/lizichen1/Google_Drive/OS_Sp17/homework/src/HW2/input_data/input-1.txt";
 
         if(args.length == 2){
             if(args[0].equals("--verbose")){

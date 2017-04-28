@@ -24,7 +24,7 @@ public class Utils {
     public static final String THE_ORIGINAL_INPUT_WAS = "The original input was: ";
     public static final String THE_SORTED_INPUT_WAS = "The sorted input was:";
 
-    public static final String RANDOM_NUMBER_FILE = "/Users/lizichen1/Google_Drive/OS_Sp17/homework/input/random-numbers";
+    public static final String RANDOM_NUMBER_FILE = "/Users/lizichen1/Google_Drive/OS_Sp17/homework/src/HW2/random-numbers.txt";
 
     public static final String EMPTY_SPACE = " ";
 

@@ -23,6 +23,12 @@ A **Process** is characterized by four non-negative integers A, B, C, and M.
 • I/O time (i.e., Total amount of time spent by the process in Blocked state.).
 • Waiting time (i.e., time in Ready state).
 
+### 3. HW3 - Banker's Algorithm
+Implements resource allocation using optimistic resource manager and banker's algorithm of Dijkstra.
+
+### 4. HW4 - Demand Paging  
+Simulate demand paging and see how the number of page faults depends on page size, program size, replacement algorithm, and job mix.
+
 ### Mid-term Review:
 1. Lecture 4: Numerical Scheduling Problems (the problem did in class just before section 2.4.4 (which is grayed out))
 2. OS Levels:
