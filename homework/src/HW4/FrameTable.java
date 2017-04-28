@@ -9,6 +9,8 @@ public class FrameTable {
     int numberOfFrames;
     FrameRow[] frameRows;
 
+    int previouslyTouchedFrame = -1;
+
     public FrameTable(int numberOfFrames, RandomNumberProvider randomNumberProvider) {
         this.randomNumberProvider = randomNumberProvider;
         this.numberOfFrames = numberOfFrames;
@@ -28,8 +30,6 @@ public class FrameTable {
                 }
             }
         }
-//        System.out.println("Fault!");
-        // no such page for the processId in the frames!
         return true;
     }
 
@@ -41,6 +41,7 @@ public class FrameTable {
                 frameRows[i].pageNumber = currentPage;
                 frameRows[i].processId = processId;
                 frameRows[i].currentTime = currentTime;
+                this.previouslyTouchedFrame = i;
                 return i;
             }
         }
@@ -92,6 +93,21 @@ public class FrameTable {
             System.out.println("\tEvicting Page #"+this.frameRows[frame_id_ToBeEvicted].pageNumber+" of process #"+this.frameRows[frame_id_ToBeEvicted].processId+" from Frame #"+frame_id_ToBeEvicted);
             return frame_id_ToBeEvicted;
         }else if(replacementAlgo.equals("lifo")){
+            int frame_id_ToBeEvicted = previouslyTouchedFrame;
+            FrameRow frameToBeEvicted = this.frameRows[frame_id_ToBeEvicted];
+            int evictProcessId = frameToBeEvicted.processId;
+            Process evictProcess = processes[evictProcessId];
+            evictProcess.incrementEvictOccuranceByOne();
+
+            int currentResidencyTime = currentTime - frameToBeEvicted.currentTime;
+            evictProcess.addOverallResidencyTime(currentResidencyTime);
+
+            this.frameRows[frame_id_ToBeEvicted].processId = processId;
+            this.frameRows[frame_id_ToBeEvicted].pageNumber = currentPage;
+            this.frameRows[frame_id_ToBeEvicted].currentTime = currentTime;
+
+            System.out.println("\tEvicting Page #"+this.frameRows[frame_id_ToBeEvicted].pageNumber+" of process #"+this.frameRows[frame_id_ToBeEvicted].processId+" from Frame #"+frame_id_ToBeEvicted);
+            return frame_id_ToBeEvicted;
 
         }
 
