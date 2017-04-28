@@ -23,16 +23,17 @@ public class FrameTable {
         for(int i = 0; i< this.numberOfFrames; i++){
             if(frameRows[i].processId == processId){
                 if(frameRows[i].pageNumber == currentPage){
+                    frameRows[i].leastRecentTimeStamp = currentTime;
                     return false;
                 }
             }
         }
-        System.out.println("Fault!");
+//        System.out.println("Fault!");
         // no such page for the processId in the frames!
         return true;
     }
 
-    public void replaceFrameRow(int currentPage, int processId, int currentTime, Process[] processes, String replacementAlgo) {
+    public int replaceFrameRow(int currentPage, int processId, int currentTime, Process[] processes, String replacementAlgo) {
 
         // find the un-used frame if exists
         for(int i=numberOfFrames-1;i>=0;i--){
@@ -40,7 +41,7 @@ public class FrameTable {
                 frameRows[i].pageNumber = currentPage;
                 frameRows[i].processId = processId;
                 frameRows[i].currentTime = currentTime;
-                return;
+                return i;
             }
         }
 
@@ -61,6 +62,8 @@ public class FrameTable {
             this.frameRows[frame_id_ToBeEvicted].processId = processId;
             this.frameRows[frame_id_ToBeEvicted].pageNumber = currentPage;
             this.frameRows[frame_id_ToBeEvicted].currentTime = currentTime;
+
+            return frame_id_ToBeEvicted;
         }else if(replacementAlgo.equals("lru")){
 
             int leastRecentUsedFrame_TimeStamp = currentTime;
@@ -85,10 +88,13 @@ public class FrameTable {
             this.frameRows[frame_id_ToBeEvicted].pageNumber = currentPage;
             this.frameRows[frame_id_ToBeEvicted].currentTime = currentTime;
             this.frameRows[frame_id_ToBeEvicted].leastRecentTimeStamp = currentTime;
+
+            System.out.println("\tEvicting Page #"+this.frameRows[frame_id_ToBeEvicted].pageNumber+" of process #"+this.frameRows[frame_id_ToBeEvicted].processId+" from Frame #"+frame_id_ToBeEvicted);
+            return frame_id_ToBeEvicted;
         }else if(replacementAlgo.equals("lifo")){
 
         }
 
-
+        return -1;
     }
 }

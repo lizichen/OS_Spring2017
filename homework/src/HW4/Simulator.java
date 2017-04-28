@@ -119,11 +119,11 @@ public class Simulator {
             int currentPageNumber = this.processes[processId].getCurrentWord() / this.pageSize;
             int currentWord = this.processes[processId].getCurrentWord();
             if(this.frameTable.hasPageFault(currentPageNumber, processId, time_counter)){
-                System.out.println("Process #"+processId+" | word #"+currentWord+" | page #"+currentPageNumber+" HAS FAULT!");
-                this.frameTable.replaceFrameRow(currentPageNumber, processId, time_counter, this.processes, this.replacementAlgo);
+                int frameUsed = this.frameTable.replaceFrameRow(currentPageNumber, processId, time_counter, this.processes, this.replacementAlgo);
+                System.out.println(this.time_counter+"\t| Process #"+processId+" | word #"+currentWord+"\t| page #"+currentPageNumber+"| HAS FAULT! using free frame "+frameUsed);
                 this.processes[processId].incrementPageFaultOccurance();
             }else{
-                System.out.println("Process #"+processId+" | word #"+currentWord+" | page #"+currentPageNumber+" Hit the frame");
+                System.out.println(this.time_counter+"\t| Process #"+processId+" | word #"+currentWord+"\t| page #"+currentPageNumber+"| Hit the previous frame");
             }
 
             this.processes[processId].getNextWord_multiProcess(A, B, C, randomNumberProvider);

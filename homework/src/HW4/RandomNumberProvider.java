@@ -22,6 +22,8 @@ public class RandomNumberProvider {
     }
 
     public int nextRandomInt(){
-        return Integer.valueOf(random_integers.nextLine());
+        int rand = Integer.valueOf(random_integers.nextLine());
+        System.out.println("\trandom number:"+rand);
+        return rand;
     }
 }
